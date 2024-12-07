@@ -1,20 +1,14 @@
-import { ChevronRight, type LucideIcon } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { Link } from "react-router-dom";
+import { useState } from "react";
 
 export function NavMain({
   items,
@@ -30,40 +24,30 @@ export function NavMain({
     }[];
   }[];
 }) {
+  const [activeLink, setActiveLink] = useState("Dasboard");
+
   return (
     <SidebarGroup className="">
       <SidebarGroupLabel className="">Platform</SidebarGroupLabel>
-      <SidebarMenu>
+      <SidebarMenu className="bg-transparent">
         {items.map((item) => (
-          <Collapsible
+          <Link
+            to={item.url}
             key={item.title}
-            asChild
-            defaultOpen={item.isActive}
-            className="group/collapsible"
+            className="p-1"
+            onClick={() => setActiveLink(item.title)}
           >
             <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
-                        <a href={subItem.url}>
-                          <span>{subItem.title}</span>
-                        </a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
+              <SidebarMenuButton
+                className={`"text-base font-normal" ${item.title === activeLink && " bg-neutral-200 text-neutral-800 font-semibold"}`}
+                tooltip={item.title}
+              >
+                {item.icon && <item.icon />}
+                <span>{item.title}</span>
+                {/* <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" /> */}
+              </SidebarMenuButton>
             </SidebarMenuItem>
-          </Collapsible>
+          </Link>
         ))}
       </SidebarMenu>
     </SidebarGroup>

@@ -1,0 +1,228 @@
+{
+  "inventory": [
+    {
+      "id": 1,
+      "name": "Surgical Mask",
+      "description": "Disposable mask for surgical procedures.",
+      "sku": "MED001",
+      "unit": "pcs",
+      "type": "good",
+      "stock": 500,
+      "price": 0.5,
+      "reorder": 100,
+      "expiryDate": "2024-10-01",
+      "manufacturer": "MedEquip Corp",
+      "batchNumber": "SM20231001",
+      "category": "Personal Protective Equipment",
+      "storageConditions": "Store in a cool, dry place away from sunlight.",
+      "image": "https://vanninhealthcare.com/wp-content/uploads/2021/04/DSC_7765-sredjena-fotka.png"
+    },
+    {
+      "id": 2,
+      "name": "Blood Pressure Monitor",
+      "description": "Digital monitor for measuring blood pressure.",
+      "sku": "MED002",
+      "unit": "pcs",
+      "type": "good",
+      "stock": 30,
+      "price": 50.0,
+      "reorder": 5,
+      "expiryDate": null,
+      "manufacturer": "HealthTech Inc",
+      "batchNumber": "BP20230912",
+      "category": "Diagnostic Equipment",
+      "storageConditions": "Store at room temperature, avoid excessive humidity.",
+      "image": "https://m.media-amazon.com/images/I/61A9NYPsw8L.jpg"
+    },
+    {
+      "id": 3,
+      "name": "Insulin Syringe",
+      "description": "Disposable syringe for insulin injection.",
+      "sku": "MED003",
+      "unit": "pcs",
+      "type": "good",
+      "stock": 200,
+      "price": 1.0,
+      "reorder": 50,
+      "expiryDate": "2025-05-30",
+      "manufacturer": "PharmaMed Solutions",
+      "batchNumber": "IS20230530",
+      "category": "Injection and Infusion Equipment",
+      "storageConditions": "Store in a cool, dry place away from sunlight.",
+      "image": "https://m.media-amazon.com/images/I/61JYeu6LUTL.jpg"
+    },
+    {
+      "id": 4,
+      "name": "Thermometer",
+      "description": "Digital thermometer for body temperature measurement.",
+      "sku": "MED004",
+      "unit": "pcs",
+      "type": "good",
+      "stock": 80,
+      "price": 15.0,
+      "reorder": 20,
+      "expiryDate": null,
+      "manufacturer": "ThermoTech Ltd",
+      "batchNumber": "TH20230901",
+      "category": "Diagnostic Equipment",
+      "storageConditions": "Store at room temperature.",
+      "image": "https://example.com/images/thermometer.jpg"
+    },
+    {
+      "id": 5,
+      "name": "IV Cannula",
+      "description": "Intravenous cannula for IV therapy.",
+      "sku": "MED005",
+      "unit": "pcs",
+      "type": "good",
+      "stock": 300,
+      "price": 2.0,
+      "reorder": 50,
+      "expiryDate": "2025-12-31",
+      "manufacturer": "MediSupply Co.",
+      "batchNumber": "IVC20231231",
+      "category": "IV Therapy Equipment",
+      "storageConditions": "Store in a cool, dry place.",
+      "image": "https://example.com/images/iv-cannula.jpg"
+    }
+  ],
+  "sales": [
+    {
+      "saleId": 1,
+      "date": "2024-10-22",
+      "customerId": 101,
+      "items": [
+        {
+          "itemId": 1,
+          "quantity": 50,
+          "price": 0.5
+        },
+        {
+          "itemId": 3,
+          "quantity": 20,
+          "price": 1.0
+        }
+      ],
+      "totalAmount": 35.0
+    },
+    {
+      "saleId": 2,
+      "date": "2024-10-23",
+      "customerId": 102,
+      "items": [
+        {
+          "itemId": 4,
+          "quantity": 5,
+          "price": 15.0
+        },
+        {
+          "itemId": 5,
+          "quantity": 10,
+          "price": 2.0
+        }
+      ],
+      "totalAmount": 95.0
+    }
+  ],
+  "orders": [
+    {
+      "orderId": 1,
+      "supplierId": 201,
+      "date": "2024-10-15",
+      "status": "pending",
+      "items": [
+        {
+          "itemId": 1,
+          "quantity": 200,
+          "price": 0.45
+        }
+      ],
+      "totalAmount": 90.0
+    },
+    {
+      "orderId": 2,
+      "supplierId": 202,
+      "date": "2024-10-10",
+      "status": "in-progress",
+      "items": [
+        {
+          "itemId": 2,
+          "quantity": 20,
+          "price": 48.0
+        }
+      ],
+      "totalAmount": 960.0
+    },
+    {
+      "orderId": 3,
+      "supplierId": 203,
+      "date": "2024-10-01",
+      "status": "completed",
+      "items": [
+        {
+          "itemId": 3,
+          "quantity": 150,
+          "price": 0.9
+        },
+        {
+          "itemId": 4,
+          "quantity": 20,
+          "price": 14.0
+        }
+      ],
+      "totalAmount": 300.0
+    }
+  ],
+  "customers": [
+    {
+      "customerId": 101,
+      "name": "John Doe",
+      "contact": "johndoe@example.com",
+      "address": "123 Main St, Anytown, USA"
+    },
+    {
+      "customerId": 102,
+      "name": "Jane Smith",
+      "contact": "janesmith@example.com",
+      "address": "456 Maple Ave, Anytown, USA"
+    },
+    {
+      "customerId": 103,
+      "name": "David Johnson",
+      "contact": "davidjohnson@example.com",
+      "address": "789 Oak St, Anytown, USA"
+    },
+    {
+      "customerId": 104,
+      "name": "Emily Davis",
+      "contact": "emilydavis@example.com",
+      "address": "101 Pine Ln, Anytown, USA"
+    },
+    {
+      "customerId": 105,
+      "name": "Michael Wilson",
+      "contact": "michaelwilson@example.com",
+      "address": "202 Cedar Rd, Anytown, USA"
+    }
+  ],
+  "suppliers": [
+    {
+      "supplierId": 201,
+      "name": "MedEquip Supplies",
+      "contact": "contact@medequip.com",
+      "address": "456 Supplier Rd, Supplytown, USA"
+    },
+    {
+      "supplierId": 202,
+      "name": "HealthTech Suppliers",
+      "contact": "info@healthtech.com",
+      "address": "789 Supplier Blvd, Healthtown, USA"
+    },
+    {
+      "supplierId": 203,
+      "name": "PharmaMed Distributors",
+      "contact": "support@pharmamed.com",
+      "address": "101 Distributor Ln, Pharmatown, USA"
+    }
+  ]
+}

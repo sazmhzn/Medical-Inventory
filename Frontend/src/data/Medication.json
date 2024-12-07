@@ -1,0 +1,34 @@
+{
+  "resourceType": "Medication",
+  "id": "med001",
+  "code": {
+    "coding": [
+      {
+        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+        "code": "1049502",
+        "display": "Aspirin 81 MG Oral Tablet"
+      }
+    ],
+    "text": "Aspirin 81 MG Oral Tablet"
+  },
+  "status": "active",
+  "manufacturer": {
+    "reference": "Organization/med-manufacturer-001",
+    "display": "Pharma Inc."
+  },
+  "form": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "385055001",
+        "display": "Tablet dose form"
+      }
+    ]
+  },
+  "amount": {
+    "value": 100,
+    "unit": "tablets",
+    "system": "http://unitsofmeasure.org",
+    "code": "tbl"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "resourceType": "MedicationRequest",
+  "id": "medreq001",
+  "status": "active",
+  "intent": "order",
+  "medicationReference": {
+    "reference": "Medication/med001",
+    "display": "Aspirin 81 MG Oral Tablet"
+  },
+  "subject": {
+    "reference": "Patient/pat001",
+    "display": "John Doe"
+  },
+  "authoredOn": "2023-10-01",
+  "requester": {
+    "reference": "Practitioner/pract001",
+    "display": "Dr. Smith"
+  },
+  "dosageInstruction": [
+    {
+      "text": "Take one tablet by mouth daily",
+      "timing": {
+        "repeat": {
+          "frequency": 1,
+          "period": 1,
+          "periodUnit": "d"
+        }
+      },
+      "route": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "26643006",
+            "display": "Oral route"
+          }
+        ]
+      }
+    }
+  ]
+}
