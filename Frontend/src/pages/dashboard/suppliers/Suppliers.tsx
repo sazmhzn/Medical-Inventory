@@ -1,28 +1,65 @@
 import HeaderTitle from "@/components/commons/header-title";
 import { Button } from "@/components/ui/button";
-import { Info, PlusIcon } from "lucide-react";
+import {
+  DownloadCloudIcon,
+  Info,
+  PlusIcon,
+  RefreshCwIcon,
+  SettingsIcon,
+  UploadCloudIcon,
+} from "lucide-react";
 import { Link } from "react-router-dom";
+import { PageHeader } from "../components/PageHeader";
 
 const Suppliers = () => {
+  const handleImport = () => {
+    console.log("Import Suppliers clicked");
+  };
+
+  const handleExport = () => {
+    console.log("Export Suppliers clicked");
+  };
+
+  const handlePreference = () => {
+    console.log("Preferences clicked");
+  };
+
+  const handleRefresh = () => {
+    console.log("Refresh List clicked");
+  };
+
   return (
     <div className="w-full">
-      <HeaderTitle />
+      <HeaderTitle title="Dashboard" />
 
       <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <section className="border-b py-4">
-          <header className="flex justify-between px-6">
-            <h1 className="text-2xl font-medium">All Suppliers</h1>
-            <div className="inline-flex gap-4 items-center">
-              <Button asChild>
-                <Link
-                  to="/suppliers/add-suppliers"
-                  className="flex items-center gap-1"
-                >
-                  <PlusIcon /> New
-                </Link>
-              </Button>
-            </div>
-          </header>
+          <PageHeader
+            title="All Suppliers"
+            newButtonLink="/admin/suppliers/add-suppliers"
+            actions={[
+              {
+                label: "Import Suppliers",
+                icon: <UploadCloudIcon className="h-4 w-4" />,
+                onClick: handleImport,
+              },
+              {
+                label: "Export Suppliers",
+                icon: <DownloadCloudIcon className="h-4 w-4" />,
+                onClick: handleExport,
+              },
+              {
+                label: "Preferences",
+                icon: <SettingsIcon className="h-4 w-4" />,
+                onClick: handlePreference,
+              },
+              {
+                label: "Refresh List",
+                icon: <RefreshCwIcon className="h-4 w-4" />,
+                onClick: handleRefresh,
+              },
+            ]}
+          />
         </section>
         <section className="p-6 ">
           <div className="flex flex-col gap-6 items-center justify-center  min-h-[50vh]">
