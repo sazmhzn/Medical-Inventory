@@ -36,10 +36,12 @@ const Suppliers = () => {
             </div>
 
             <Button className="uppercase" asChild>
-              <Link to={"/suppliers/add-suppliers"}>Create New Vendor</Link>
+              <Link to={"/admin/suppliers/add-suppliers"}>
+                Create New Vendor
+              </Link>
             </Button>
 
-            <Link to="/suppliers/add-supplier">
+            <Link to="/admin/suppliers/add-supplier">
               Click here to import vendors from file
             </Link>
           </div>

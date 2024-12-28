@@ -11,10 +11,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useFetch } from "@/hooks/useFetch";
 import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { ColumnDef } from "@tanstack/react-table";
-import { LayoutGridIcon, List, PlusIcon } from "lucide-react";
+import { LayoutGridIcon, List, PlusIcon, Upload } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -166,32 +173,161 @@ const columns: ColumnDef<InventoryItem>[] = [
   },
 ];
 
+const CSVImportDialog = ({
+  onImportSuccess,
+}: {
+  onImportSuccess: (data: InventoryItem[]) => void;
+}) => {
+  const [file, setFile] = useState<File | null>(null);
+  const [error, setError] = useState<string>("");
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile && selectedFile.type === "text/csv") {
+      setFile(selectedFile);
+      setError("");
+    } else {
+      setError("Please select a valid CSV file");
+      setFile(null);
+    }
+  };
+
+  const processCSVData = (csvText: string) => {
+    try {
+      const lines = csvText.split("\n");
+      const headers = lines[0].split(",").map((header) => header.trim());
+
+      const inventoryItems: InventoryItem[] = lines
+        .slice(1)
+        .filter((line) => line.trim())
+        .map((line) => {
+          const values = line.split(",").map((value) => value.trim());
+          const item: any = {};
+
+          headers.forEach((header, index) => {
+            if (
+              header === "stock" ||
+              header === "price" ||
+              header === "reorder"
+            ) {
+              item[header] = parseFloat(values[index]) || 0;
+            } else {
+              item[header] = values[index];
+            }
+          });
+
+          // Add default values for required fields if missing
+          item.status =
+            item.stock <= item.reorder
+              ? item.stock === 0
+                ? "critical"
+                : "low"
+              : "good";
+          item.type = item.type || "good";
+          item.id = item.id || crypto.randomUUID();
+
+          return item as InventoryItem;
+        });
+
+      return inventoryItems;
+    } catch (error) {
+      throw new Error("Failed to process CSV file. Please check the format.");
+    }
+  };
+
+  const handleImport = async () => {
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const inventoryItems = processCSVData(text);
+      onImportSuccess(inventoryItems);
+      setFile(null);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="gap-2">
+          <Upload className="w-4 h-4" />
+          Import CSV
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Import Inventory from CSV</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleFileChange}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            />
+            {error && <p className="text-sm text-red-500">{error}</p>}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            <p>The CSV file should contain the following columns:</p>
+            <ul className="list-disc list-inside mt-2">
+              <li>name (required)</li>
+              <li>stock (required, number)</li>
+              <li>price (required, number)</li>
+              <li>reorder (required, number)</li>
+              <li>unit</li>
+              <li>type</li>
+              <li>manufacturer</li>
+              <li>category</li>
+              <li>description</li>
+            </ul>
+          </div>
+          <Button onClick={handleImport} disabled={!file}>
+            Import Data
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const Inventory = () => {
   const { data: inventory, loading, error } = useFetch("inventory");
   const [viewMode, setViewMode] = useState("Table");
+  const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
 
-  const processedInventory = inventory?.map((item) => {
-    let status: "good" | "low" | "critical" = "good";
-    if (item.stock <= item.reorder) {
-      status = item.stock === 0 ? "critical" : "low";
-    }
-    return { ...item, status };
-  });
+  const processedInventory =
+    inventoryData?.length > 0
+      ? inventoryData
+      : inventory?.map((item) => {
+          let status: "good" | "low" | "critical" = "good";
+          if (item.stock <= item.reorder) {
+            status = item.stock === 0 ? "critical" : "low";
+          }
+          return { ...item, status };
+        });
+
+  const handleImportSuccess = (importedData: InventoryItem[]) => {
+    setInventoryData(importedData);
+    // Here you might want to make an API call to save the imported data
+    // For now, we're just updating the local state
+  };
 
   return (
     <div className="w-full">
-      <HeaderTitle />
+      <HeaderTitle title="Inventory" />
 
       <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <section className="border-b py-4">
           <header className="flex justify-between px-6">
             <h1 className="text-2xl font-medium">All Items</h1>
             <div className="inline-flex gap-4 items-center">
+              <CSVImportDialog onImportSuccess={handleImportSuccess} />
+
               <Button asChild>
-                <Link
-                  to="/inventory/add-item"
-                  className="flex items-center gap-1"
-                >
+                <Link to="add-item" className="flex items-center gap-1">
                   <PlusIcon /> New
                 </Link>
               </Button>
@@ -227,7 +363,7 @@ const Inventory = () => {
               columns={columns}
             />
           ) : (
-            <div className="grid grid-cols-3">
+            <div className="grid grid-cols-1 md:grid-cols-3">
               <Card className="items-center flex flex-col gap-2 p-4">
                 <CardTitle>Add new Stock</CardTitle>
                 <CardDescription className="flex items-center flex-col gap-4">
@@ -236,7 +372,7 @@ const Inventory = () => {
                   </p>
 
                   <Button asChild>
-                    <Link to={"/inventory/add-item"}>New Item</Link>
+                    <Link to={"/admin/inventory/add-item"}>New Item</Link>
                   </Button>
                 </CardDescription>
               </Card>

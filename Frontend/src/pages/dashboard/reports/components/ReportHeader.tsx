@@ -1,8 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Share1Icon } from "@radix-ui/react-icons";
 import { ChevronDown, Filter, History, Settings, XIcon } from "lucide-react";
+import { useState } from "react";
 
-const ReportHeader = ({ reportName = "sales by Item", category = "Sales" }) => {
+const ReportHeader = ({
+  reportName = "sales by Item",
+  category = "Sales",
+
+}) => {
   const handleRunReport = () => {
     // Logic to run the report based on selected filters and dates
     console.log("Running report with:");
@@ -11,6 +16,45 @@ const ReportHeader = ({ reportName = "sales by Item", category = "Sales" }) => {
   const handleExport = () => {
     // Logic to export the report
     console.log("Exporting report");
+  };
+
+  const [file, setFile] = useState();
+
+  const fileReader = new FileReader();
+
+  const handleOnChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const csvFileToArray = (string) => {
+    const csvHeader = string.slice(0, string.indexOf("\n")).split(",");
+    const csvRows = string.slice(string.indexOf("\n") + 1).split("\n");
+
+    const array = csvRows
+      .map((row) => {
+        const values = row.split(",");
+        if (values.length !== csvHeader.length) return null; // Handle incomplete rows
+        return csvHeader.reduce((object, header, index) => {
+          object[header.trim()] = values[index].trim();
+          return object;
+        }, {});
+      })
+      .filter(Boolean); // Filter out invalid rows
+
+    onCsvImport(array); // Pass data back to the parent
+  };
+
+  const handleOnSubmit = (e) => {
+    e.preventDefault();
+
+    if (file) {
+      fileReader.onload = function (event) {
+        const text = event.target.result;
+        csvFileToArray(text);
+      };
+
+      fileReader.readAsText(file);
+    }
   };
 
   return (
@@ -69,6 +113,29 @@ const ReportHeader = ({ reportName = "sales by Item", category = "Sales" }) => {
           >
             <XIcon className="w-6 h-6 stroke-red-600" />
           </Button>
+
+          <form>
+            <input
+              type="file"
+              onChange={() => {
+                {
+                  handleOnChange;
+                }
+              }}
+              accept=".csv"
+            />
+            <Button
+              variant="outline"
+              type="submit"
+              onClick={() => {
+                {
+                  handleOnSubmit;
+                }
+              }}
+            >
+              Import CSV
+            </Button>
+          </form>
         </div>
       </div>
     </div>

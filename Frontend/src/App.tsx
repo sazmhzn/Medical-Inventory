@@ -2,7 +2,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/dashboard/Dashboard";
 import NoPage from "./pages/NoPage";
 import AuthPage from "./pages/auth/AuthPage";
-import AuthLayout from "./pages/auth/AuthLayout";
 import Inventory from "./pages/dashboard/inventory/Inventory";
 import AddItem from "./pages/dashboard/inventory/AddItem";
 import Report from "./pages/dashboard/reports/Report";
@@ -16,6 +15,9 @@ import Suppliers from "./pages/dashboard/suppliers/Suppliers";
 import AddSuppliers from "./pages/dashboard/suppliers/AddSuppliers";
 import ReportLayout from "./pages/dashboard/reports/components/ReportLayout";
 import GenericReportDisplay from "./pages/dashboard/reports/components/GenericReportDisplay";
+import About from "./pages/landing/About";
+import Services from "./pages/landing/Services";
+import AuthLayout from "./layouts/AuthLayout";
 
 function App() {
   return (
@@ -23,7 +25,7 @@ function App() {
       <Routes>
         {/* Main Layout Routes */}
         <Route
-          path="/"
+          path="/admin"
           element={
             <ProtectedRoute>
               <DashboardLayout />
@@ -71,8 +73,11 @@ function App() {
           <Route path="*" element={<NoPage />} />
         </Route>
 
-        <Route path="/landing" element={<Layout />}>
+        <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="about" element={<About />} />
+          <Route path="services" element={<Services />} />
+
           <Route path="*" element={<NoPage />} />
         </Route>
 

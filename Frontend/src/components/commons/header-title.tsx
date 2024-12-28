@@ -42,13 +42,13 @@ const notifications = [
   },
 ];
 
-const HeaderTitle = () => {
+const HeaderTitle = ({ title }: { title: string }) => {
   return (
     <div>
       <div className="flex justify-between items-center px-4 py-2">
         <div className="flex items-center gap-4">
           <SidebarTrigger className=" w-6 h-6" />
-          <h1 className="text-xl font-bold"> </h1>
+          <h1 className="text-xl font-bold"> {title} </h1>
         </div>
         <div className="space-x-2">
           <DropdownMenu>

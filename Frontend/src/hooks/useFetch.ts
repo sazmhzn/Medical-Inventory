@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3001";
+const BASE_URL = "http://localhost:8080/mis/";
 
 export const useFetch = (url: string) => {
   const [data, setData] = useState<unknown>(null);

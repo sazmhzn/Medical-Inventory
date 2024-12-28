@@ -8,12 +8,11 @@ import {
   GalleryVerticalEnd,
   Map,
   PieChart,
-  Settings2,
   SquareTerminal,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
+// import { NavProjects } from "@/components/nav-projects";
 // import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
@@ -179,28 +178,28 @@ const data = {
   navMain: [
     {
       title: "Dasboard",
-      url: "/",
+      url: "/admin",
       icon: SquareTerminal,
       isActive: true,
     },
     {
       title: "Inventory",
-      url: "/inventory",
+      url: "/admin/inventory",
       icon: Bot,
     },
     {
       title: "Orders",
-      url: "/orders",
+      url: "/admin/orders",
       icon: BookOpen,
     },
     {
       title: "Suppliers",
-      url: "/suppliers",
+      url: "/admin/suppliers",
       icon: BookOpen,
     },
     {
       title: "Reports",
-      url: "/reports",
+      url: "/admin/reports",
       icon: BookOpen,
     },
     // {

@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 const ReportTable = () => {
-  return (
-    <div>ReportTable</div>
-  )
-}
+  return <div>ReportTable</div>;
+};
 
-export default ReportTable
+export default ReportTable;

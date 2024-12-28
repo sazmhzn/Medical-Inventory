@@ -6,6 +6,22 @@ import { Separator } from "@/components/ui/separator";
 import { Chart } from "./components/PieChart";
 import { Button } from "@/components/ui/button";
 import Starter from "./components/Starter";
+import { Package, TrendingUp } from "lucide-react";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 interface StockData {
   totalStock: number;
@@ -35,6 +51,29 @@ const fetchStockData = (): Promise<StockData> => {
   });
 };
 
+const chartData = [
+  { month: "January", desktop: 186, mobile: 80, other: 45 },
+  { month: "February", desktop: 305, mobile: 200, other: 100 },
+  { month: "March", desktop: 237, mobile: 120, other: 150 },
+  { month: "April", desktop: 73, mobile: 190, other: 50 },
+  { month: "May", desktop: 209, mobile: 130, other: 100 },
+  { month: "June", desktop: 214, mobile: 140, other: 160 },
+];
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "hsl(var(--chart-1))",
+  },
+  mobile: {
+    label: "Mobile",
+    color: "hsl(var(--chart-2))",
+  },
+  other: {
+    label: "Other",
+    color: "hsl(var(--chart-3))",
+  },
+} satisfies ChartConfig;
+
 const Dashboard = () => {
   const [stockData, setStockData] = useState<StockData | null>(null);
   useEffect(() => {
@@ -50,7 +89,7 @@ const Dashboard = () => {
       <HeaderTitle title="Dashbaord" />
       <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <Tabs defaultValue="dashboard">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-4">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="starter">Getting Started</TabsTrigger>
             <TabsTrigger value="updates">Recent Updates</TabsTrigger>
@@ -74,7 +113,7 @@ const Dashboard = () => {
                       </div>
                       <div className="text-center inline-flex items-center gap-2">
                         <span className="aspect-square w-6 h-6 border rounded-full">
-                          s
+                          <Package />
                         </span>
                         <p className="uppercase font-medium text-md">
                           {" "}
@@ -92,7 +131,7 @@ const Dashboard = () => {
                       </div>
                       <div className="text-center inline-flex items-center gap-2">
                         <span className="aspect-square w-6 h-6 border rounded-full">
-                          s
+                          <Package />
                         </span>
                         <p className="uppercase font-medium text-md">
                           {" "}
@@ -110,7 +149,7 @@ const Dashboard = () => {
                       </div>
                       <div className="text-center inline-flex items-center gap-2">
                         <span className="aspect-square w-6 h-6 border rounded-full">
-                          s
+                          <Package />
                         </span>
                         <p className="uppercase font-medium text-md">
                           {" "}
@@ -151,8 +190,8 @@ const Dashboard = () => {
             </section>
 
             <section>
-              <div className="flex gap-4">
-                <article className="border rounded-lg overflow-hidden w-1/2">
+              <div className="grid md:grid-cols-2 gap-4">
+                <article className="border rounded-lg overflow-hidden w-full">
                   {/* <DataTable data={getTasks} columns={columns} /> */}
                   {/* <DataTable /> */}
                   <header className="bg-gray-100 p-4">
@@ -160,7 +199,15 @@ const Dashboard = () => {
                       Product Details
                     </h3>
                   </header>
-                  <div className="flex justify-between items-center">
+                  <div className="flex md:flex-col flex-col justify-between items-center">
+                    <div className="p-0 w-full flex flex-col items-center">
+                      <Chart />
+                    </div>
+                    <Separator
+                      orientation="horizontal"
+                      className="h-[1px] mx-2 border"
+                    />
+
                     <div className="p-4 w-full flex flex-col justify-between ">
                       <div className="flex justify-between mb-4">
                         <h1 className="text-md font-normal text-red-400 uppercase">
@@ -185,14 +232,10 @@ const Dashboard = () => {
                         </p>
                       </div>
                     </div>
-                    <Separator orientation="vertical" className="h-20 border" />
-                    <div className="p-4 w-1/2 flex flex-col items-center">
-                      <Chart />
-                    </div>
                   </div>
                 </article>
 
-                <article className="border rounded-lg overflow-hidden w-1/2">
+                <article className="border rounded-lg overflow-hidden  w-full">
                   <header className="bg-gray-100 p-4 inline-flex w-full justify-between">
                     <h3 className="text-xl text-neutral-800">
                       Top Selling Products
@@ -209,6 +252,82 @@ const Dashboard = () => {
                         0
                       </p>
                     </div>
+                    <Separator
+                      orientation="horizontal"
+                      className="h-[1px] mx-2 border"
+                    />
+                    <Card className="border-none shadow-none">
+                      <CardHeader>
+                        <CardTitle>Area Chart - Stacked Expanded</CardTitle>
+                        <CardDescription>
+                          Showing total visitors for the last 6months
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ChartContainer config={chartConfig}>
+                          <AreaChart
+                            accessibilityLayer
+                            data={chartData}
+                            margin={{
+                              left: 12,
+                              right: 12,
+                              top: 12,
+                            }}
+                            stackOffset="expand"
+                          >
+                            <CartesianGrid vertical={false} />
+                            <XAxis
+                              dataKey="month"
+                              tickLine={false}
+                              axisLine={false}
+                              tickMargin={8}
+                              tickFormatter={(value) => value.slice(0, 3)}
+                            />
+                            <ChartTooltip
+                              cursor={false}
+                              content={<ChartTooltipContent indicator="line" />}
+                            />
+                            <Area
+                              dataKey="other"
+                              type="natural"
+                              fill="var(--color-other)"
+                              fillOpacity={0.1}
+                              stroke="var(--color-other)"
+                              stackId="a"
+                            />
+                            <Area
+                              dataKey="mobile"
+                              type="natural"
+                              fill="var(--color-mobile)"
+                              fillOpacity={0.4}
+                              stroke="var(--color-mobile)"
+                              stackId="a"
+                            />
+                            <Area
+                              dataKey="desktop"
+                              type="natural"
+                              fill="var(--color-desktop)"
+                              fillOpacity={0.4}
+                              stroke="var(--color-desktop)"
+                              stackId="a"
+                            />
+                          </AreaChart>
+                        </ChartContainer>
+                      </CardContent>
+                      <CardFooter>
+                        <div className="flex w-full items-start gap-2 text-sm">
+                          <div className="grid gap-2">
+                            <div className="flex items-center gap-2 font-medium leading-none">
+                              Trending up by 5.2% this month{" "}
+                              <TrendingUp className="h-4 w-4" />
+                            </div>
+                            <div className="flex items-center gap-2 leading-none text-muted-foreground">
+                              January - June 2024
+                            </div>
+                          </div>
+                        </div>
+                      </CardFooter>
+                    </Card>
                   </div>
                 </article>
               </div>

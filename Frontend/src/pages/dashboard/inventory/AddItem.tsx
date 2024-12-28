@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 const AddItem = () => {
   return (
     <div className="w-full">
-      <HeaderTitle />
+      <HeaderTitle title="Item" />
 
       <div className="bg-background/95 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <section className="border-b pb-4">

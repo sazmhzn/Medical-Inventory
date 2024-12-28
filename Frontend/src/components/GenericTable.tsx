@@ -137,7 +137,9 @@ export function GenericTable<T>({
                 "Field Customization",
                 "Refresh List",
               ].map((item, index) => (
-                <Link key={index}>{item}</Link>
+                <Link to={"/"} key={index}>
+                  {item}
+                </Link>
               ))}
             </Card>
           </DropdownMenuContent>

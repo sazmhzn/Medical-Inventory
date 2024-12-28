@@ -159,7 +159,7 @@ const Order = () => {
                 </div>
 
                 <Button className="uppercase" asChild>
-                  <Link to={"/orders/add-order"}>Create Sales Order</Link>
+                  <Link to={"/admin/orders/add-order"}>Create Sales Order</Link>
                 </Button>
               </div>
             </section>
