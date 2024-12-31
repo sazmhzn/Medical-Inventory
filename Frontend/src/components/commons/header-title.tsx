@@ -5,6 +5,7 @@ import {
   CirclePlus,
   LayoutGrid,
   PlusIcon,
+  Settings,
   ShoppingCart,
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -199,6 +200,12 @@ const HeaderTitle = ({ title }: { title: string }) => {
               </Card>
             </DropdownMenuContent>
           </DropdownMenu>
+          <Button variant="secondary" size="icon" asChild>
+            <Link to="/admin/settings/orgprofile">
+              {" "}
+              <Settings />{" "}
+            </Link>
+          </Button>
         </div>
       </div>
       <Separator />

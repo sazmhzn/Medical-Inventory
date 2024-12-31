@@ -1,55 +1,52 @@
-import { type LucideIcon } from "lucide-react";
-
-import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import {
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
-export function NavMain({
-  items,
-}: {
-  items: {
-    title: string;
-    url: string;
-    icon?: LucideIcon;
-    isActive?: boolean;
-    items?: {
-      title: string;
-      url: string;
-    }[];
-  }[];
-}) {
-  const [activeLink, setActiveLink] = useState("Dasboard");
-
+export function NavMain({ items }) {
   return (
-    <SidebarGroup className="">
-      <SidebarGroupLabel className="">Platform</SidebarGroupLabel>
-      <SidebarMenu className="bg-transparent">
-        {items.map((item) => (
-          <Link
-            to={item.url}
-            key={item.title}
-            className="p-1"
-            onClick={() => setActiveLink(item.title)}
-          >
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                className={`"text-base font-normal" ${item.title === activeLink && " bg-neutral-200 text-neutral-800 font-semibold"}`}
-                tooltip={item.title}
-              >
-                {item.icon && <item.icon />}
-                <span>{item.title}</span>
-                {/* <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" /> */}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+    <SidebarMenu className="space-y-1 pt-2">
+      {items.map((item) => (
+        <SidebarMenuItem key={item.url}>
+          <Link to={item.url}>
+            <SidebarMenuButton
+              isActive={item.isActive}
+              className={cn(
+                "w-full flex flex-col items-start gap-0.5 px-4 py-2",
+                "group hover:bg-gray-50",
+                item.isActive && "bg-gray-50"
+              )}
+            >
+              <div className="flex items-center gap-3 text-gray-700">
+                <item.icon
+                  className={cn(
+                    "h-4 w-4",
+                    item.isActive
+                      ? "text-blue-600"
+                      : "text-gray-400 group-hover:text-gray-600"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "font-medium ",
+                    item.isActive ? "text-blue-600" : "text-gray-700"
+                  )}
+                >
+                  {item.title}
+                </span>
+              </div>
+              {item.description && (
+                <span className="pl-7 text-xs text-gray-500">
+                  {item.description}
+                </span>
+              )}
+            </SidebarMenuButton>
           </Link>
-        ))}
-      </SidebarMenu>
-    </SidebarGroup>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
   );
 }

@@ -1,34 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
-
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import { useFieldArray, useForm } from "react-hook-form";
-import { CalendarIcon, DeleteIcon } from "lucide-react";
-
-import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
-
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -37,463 +25,399 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-// import { Label } from "@/components/ui/label";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import { useFetch } from "@/hooks/useFetch";
+import { CaretSortIcon } from "@radix-ui/react-icons";
+import DynamicFormGenerator, {
+  FieldConfig,
+} from "@/pages/test/__testDynamicForm";
+import { useFetchInventory } from "@/services/InventoryAPI";
+import { useFetchSuppliers } from "@/services/UserAPI";
 
-// Define the type for inventory items
-type InventoryItem = {
+export interface Inventory {
   id: number;
   name: string;
-  value: string;
-};
+  description: string;
+  sku: string;
+  unit: string;
+  type: "GOODS" | "SERVICE";
+  stock: number;
+  price: number;
+  reorder: number;
+  expiryDate?: string;
+  manufacturer: string;
+  batchNumber: string;
+  category: string;
+  storageConditions?: string;
+  image?: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+}
+// Add this to your API service file
 
-type CustomerItem = {
+interface OrderItem {
   id: number;
+  inventoryId: number;
   name: string;
+  sku: string;
+  qty: number;
+  rate: number;
+  tax: number;
+  amount: number;
+}
+
+// Supplier Select Component
+const SupplierSelect = ({
+  value,
+  onChange,
+}: {
   value: string;
-};
+  onChange: (value: string) => void;
+}) => {
+  const { data: suppliers, loading } = useFetchSuppliers();
+  const [open, setOpen] = useState(false);
 
-const orderFormSchema = z.object({
-  companyName: z.string().min(1, {
-    message: "Customer name must be at least 3 characters.",
-  }),
-  displayName: z.string().min(1, {
-    message: "Customer name must be at least 3 characters.",
-  }),
-  salesOrder: z.coerce
-    .number({ invalid_type_error: "Order Number must be number." })
-    .int("OrderNumber must be an integer."),
-  salesOrderDate: z.date({
-    required_error: "Sales order date is required.",
-  }),
-});
-
-const AddOrderForm = () => {
-  const [openCustomer, setOpenCustomer] = useState(false);
-  const [openItem, setOpenItem] = useState(false);
-  const [customerValue, setCustomerValue] = useState("");
-  const [itemValue, setItemValue] = useState("");
-  const [submittedValue, setSubmittedValue] = useState(null);
-
-  const form = useForm<z.infer<typeof orderFormSchema>>({
-    resolver: zodResolver(orderFormSchema),
-    defaultValues: {
-      customer: "",
-      salesOrder: 0,
-      salesOrderDate: new Date(),
-      items: [{ id: 0, name: "", qty: 1, rate: 0, tax: 0, amount: 0 }],
-    },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "items",
-  });
-
-  function onSubmit(values: z.infer<typeof orderFormSchema>) {
-    console.log(values);
-    console.log("Submitted");
-  }
-
-  const {
-    data: inventoryData,
-    loading: inventoryLoading,
-    error: inventoryError,
-  } = useFetch("inventory");
-
-  // Fetch customer data
-  const {
-    data: customerData,
-    loading: customerLoading,
-    error: customerError,
-  } = useFetch<CustomerItem[]>("customers");
+  const selectedSupplier = suppliers.find((s) => s.id.toString() === value);
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-8 min-h-[80vh]"
-      >
-        <div className="grid lg:grid-cols-2 bg-neutral-50 gap-4 p-4">
-          <div className="space-y-3 lg:max-w-xl ">
-            <FormField
-              control={form.control}
-              name="customer"
-              render={({ field }) => (
-                <FormItem className="flex lg:gap-14 gap-20 items-center">
-                  <FormLabel
-                    htmlFor="customer"
-                    className="lg:w-[20ch] w-[20ch] "
-                  >
-                    Customer
-                  </FormLabel>
-                  <div className="w-full">
-                    <Popover open={openCustomer} onOpenChange={setOpenCustomer}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "w-full justify-between",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value
-                              ? customerData?.find(
-                                  (customer: CustomerItem) =>
-                                    customer.name === field.value
-                                )?.name
-                              : "Select a customer"}
-
-                            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="lg:w-[450px] p-0">
-                        <Command>
-                          <CommandInput
-                            placeholder="Search customer or add"
-                            className="h-9"
-                          />
-                          <CommandList>
-                            <CommandEmpty>No customer found.</CommandEmpty>
-                            <CommandGroup>
-                              {customerData?.map((customer: CustomerItem) => (
-                                <CommandItem
-                                  key={customer.id}
-                                  value={customer.name}
-                                  onSelect={(currentValue) => {
-                                    form.setValue("customer", currentValue);
-                                    setOpenCustomer(false);
-                                  }}
-                                >
-                                  {customer.name}
-                                  <CheckIcon
-                                    className={cn(
-                                      "ml-auto h-4 w-4",
-                                      field.value === customer.name
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-
-                    <FormMessage />
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          className="w-full justify-between"
+        >
+          {selectedSupplier ? selectedSupplier.name : "Select a supplier"}
+          <CaretSortIcon className="ml-2 h-4 w-4 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[400px] p-0">
+        <Command>
+          <CommandInput placeholder="Search suppliers..." />
+          <CommandList>
+            <CommandEmpty>
+              {loading ? "Loading..." : "No suppliers found."}
+            </CommandEmpty>
+            <CommandGroup>
+              {suppliers.map((supplier) => (
+                <CommandItem
+                  key={supplier.id}
+                  value={supplier.name}
+                  onSelect={() => {
+                    onChange(supplier.id.toString());
+                    setOpen(false);
+                  }}
+                >
+                  <div className="flex flex-col">
+                    <span>{supplier.name}</span>
+                    <span className="text-sm text-gray-500">
+                      Contact: {supplier.contact} | Address: {supplier.address}
+                    </span>
                   </div>
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
-        <div className="md:w-1/2 gap-4 p-4">
-          <div className="space-y-3 max-w-lg">
-            <FormField
-              control={form.control}
-              name="salesOrder"
-              render={({ field }) => (
-                <FormItem className="flex gap-10 w-full  items-center">
-                  <FormLabel className="w-[25ch] inline-block">
-                    Sales Order#
-                  </FormLabel>
-                  <div className="w-full  lg:flex flex-col">
-                    <FormControl>
-                      <Input
-                        className="bg-white focus-within:bg-white active:bg-white"
-                        {...field}
-                        required
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="salesOrderDate"
-              render={({ field }) => (
-                <FormItem className="flex gap-10 items-center">
-                  <FormLabel className="w-[25ch]">Sales Order Date</FormLabel>
-                  <div className="w-full flex flex-col">
-                    <FormControl>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon />
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date < new Date()}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="shipmentDate"
-              render={({ field }) => (
-                <FormItem className="flex gap-10 items-center">
-                  <FormLabel className="w-[25ch]">
-                    Expected Shipment Date
-                  </FormLabel>
-                  <div className="w-full flex flex-col">
-                    <FormControl>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon />
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>MM DD YYYY</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            // selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date() || date < new Date("1900-01-01")
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
+const orderFields: FieldConfig[] = [
+  {
+    name: "companyName",
+    label: "Company",
+    type: "select",
+    gridWidth: "full",
+    options: [
+      { value: "medicine", label: "Medicine" },
+      { value: "equipment", label: "Equipment" },
+      { value: "supplies", label: "Supplies" },
+      { value: "supplement", label: "Supplement" },
+    ],
+    required: true,
+  },
+  {
+    name: "salesOrder",
+    label: "Sales Order #",
+    type: "text",
+    required: true,
+    gridWidth: "half",
+  },
+  {
+    name: "salesOrderDate",
+    label: "Sales Order Date",
+    type: "date",
+    required: true,
+    gridWidth: "half",
+  },
+  {
+    name: "shipmentDate",
+    label: "Expected Shipment Date",
+    type: "date",
+    required: true,
+    gridWidth: "half",
+  },
+  {
+    name: "paymentTerms",
+    label: "Payment Terms",
+    type: "select",
+    required: true,
+    gridWidth: "half",
+    options: [
+      { value: "net30", label: "Net 30" },
+      { value: "net60", label: "Net 60" },
+      { value: "immediate", label: "Immediate" },
+    ],
+  },
+];
 
-        <div className="lg:w-3/4 gap-4">
-          <div>
+const OrderForm = () => {
+  const [items, setItems] = useState<OrderItem[]>([
+    {
+      id: 1,
+      inventoryId: 0,
+      name: "",
+      sku: "",
+      qty: 1,
+      rate: 0,
+      tax: 0,
+      amount: 0,
+    },
+  ]);
+  const [openItems, setOpenItems] = useState<{ [key: number]: boolean }>({});
+  const {
+    data: inventoryData,
+    loading,
+    error,
+  } = useFetchInventory("inventory");
+
+  const { data: suppliers, loading: loadingSupplier } = useFetchSuppliers();
+  const [open, setOpen] = useState(false);
+  const selectedSupplier = suppliers.find((s) => s.id.toString() === value);
+
+  const inventory = (inventoryData as Inventory[]) || [];
+
+  const calculateItemAmount = (qty: number, rate: number, tax: number) => {
+    const subtotal = qty * rate;
+    const taxAmount = (subtotal * tax) / 100;
+    return subtotal + taxAmount;
+  };
+
+  const calculateTotal = () => {
+    return items.reduce(
+      (total, item) =>
+        total + calculateItemAmount(item.qty, item.rate, item.tax),
+      0
+    );
+  };
+
+  const toggleItemDropdown = (index: number) => {
+    setOpenItems((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
+  const handleItemChange = (
+    index: number,
+    field: keyof OrderItem,
+    value: any
+  ) => {
+    const newItems = [...items];
+
+    if (field === "inventoryId") {
+      const selectedItem = inventory.find((inv) => inv.id === value);
+      if (selectedItem) {
+        newItems[index] = {
+          ...newItems[index],
+          inventoryId: selectedItem.id,
+          name: selectedItem.name,
+          sku: selectedItem.sku,
+          rate: selectedItem.price,
+          amount: calculateItemAmount(
+            newItems[index].qty,
+            selectedItem.price,
+            newItems[index].tax
+          ),
+        };
+      }
+    } else {
+      newItems[index] = {
+        ...newItems[index],
+        [field]: value,
+        amount: calculateItemAmount(
+          field === "qty" ? value : items[index].qty,
+          field === "rate" ? value : items[index].rate,
+          field === "tax" ? value : items[index].tax
+        ),
+      };
+    }
+    setItems(newItems);
+  };
+
+  const addItem = () => {
+    setItems([
+      ...items,
+      {
+        id: Date.now(),
+        inventoryId: 0,
+        name: "",
+        sku: "",
+        qty: 1,
+        rate: 0,
+        tax: 0,
+        amount: 0,
+      },
+    ]);
+  };
+
+  const removeItem = (index: number) => {
+    if (items.length > 1) {
+      setItems(items.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleSubmit = (formData: any) => {
+    const completeOrderData = {
+      ...formData,
+      items: items,
+      totalAmount: calculateTotal(),
+    };
+    console.log("Complete Order Data:", completeOrderData);
+  };
+
+  return (
+    <div className="space-y-6">
+      <DynamicFormGenerator
+        fields={orderFields}
+        onSubmit={handleSubmit}
+        title="Create Order"
+        context="order"
+        additionalContent={
+          <div className="mt-8">
             <h3 className="text-lg bg-gray-200 p-4 text-neutral-800 font-semibold">
-              Item Table
+              Order Items
             </h3>
             <div className="p-4">
-              <Table className="">
-                <TableCaption>A list of your recent invoices.</TableCaption>
+              <Table>
                 <TableHeader>
-                  <TableRow className="">
-                    <TableHead className="">Item</TableHead>
-                    <TableHead className="">Quantity</TableHead>
-                    <TableHead className="">Rate</TableHead>
-                    <TableHead className="">Tax</TableHead>
-                    <TableHead className="">Amount</TableHead>
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead>SKU</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Rate</TableHead>
+                    <TableHead>Tax (%)</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {fields.map((item, index) => (
-                    <TableRow key={item.id} className="p-4">
-                      <TableCell className="font-medium border-r">
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.name`}
-                          render={({ field }) => (
-                            <FormItem className="flex gap-4 w-full  items-center">
-                              <div className="w-full  lg:flex flex-col">
-                                <FormControl>
-                                  <Popover
-                                    open={openItem}
-                                    onOpenChange={setOpenItem}
-                                  >
-                                    <PopoverTrigger asChild>
-                                      <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className={cn(
-                                          "w-full justify-between",
-                                          !field.value &&
-                                            "text-muted-foreground"
-                                        )}
-                                      >
-                                        {field.value
-                                          ? inventoryData?.find(
-                                              (inv: InventoryItem) =>
-                                                inv.name === field.value
-                                            )?.name
-                                          : "Select an item"}
-
-                                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                      </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="lg:w-[450px] p-0">
-                                      <Command>
-                                        <CommandInput
-                                          placeholder="Search inventory"
-                                          className="h-9"
-                                        />
-                                        <CommandList>
-                                          <CommandEmpty>
-                                            No item found.
-                                          </CommandEmpty>
-                                          <CommandGroup>
-                                            {inventoryData?.map(
-                                              (inv: InventoryItem) => (
-                                                <CommandItem
-                                                  key={inv.id}
-                                                  value={inv.name}
-                                                  onSelect={() => {
-                                                    form.setValue(
-                                                      `items.${index}.name`,
-                                                      inv.name
-                                                    );
-                                                    form.setValue(
-                                                      `items.${index}.id`,
-                                                      inv.id
-                                                    );
-                                                    setOpenItem(false);
-                                                  }}
-                                                >
-                                                  {inv.name}
-                                                  <CheckIcon
-                                                    className={
-                                                      (cn(
-                                                        "ml-auto h-4 w-4",
-                                                        itemValue === inv.value
-                                                          ? "opacity-100"
-                                                          : "opacity-0"
-                                                      ),
-                                                      form.watch(
-                                                        `items.${index}.name`
-                                                      ) === inv.name
-                                                        ? "opacity-100"
-                                                        : "opacity-0")
-                                                    }
-                                                  />
-                                                </CommandItem>
-                                              )
-                                            )}
-                                          </CommandGroup>
-                                        </CommandList>
-                                      </Command>
-                                    </PopoverContent>
-                                  </Popover>
-                                </FormControl>
-                                <FormMessage />
-                              </div>
-                            </FormItem>
-                          )}
+                  {items.map((item, index) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <Popover
+                          open={openItems[index]}
+                          onOpenChange={() => toggleItemDropdown(index)}
+                        >
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className="w-full justify-between"
+                            >
+                              {item.name || "Select an item"}
+                              <CaretSortIcon className="ml-2 h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[300px] p-0">
+                            <Command>
+                              <CommandInput placeholder="Search item..." />
+                              <CommandList>
+                                <CommandEmpty>
+                                  {loading ? "Loading..." : "No items found."}
+                                </CommandEmpty>
+                                <CommandGroup>
+                                  {inventory.map((inv) => (
+                                    <CommandItem
+                                      key={inv.id}
+                                      value={inv.name}
+                                      onSelect={() => {
+                                        handleItemChange(
+                                          index,
+                                          "inventoryId",
+                                          inv.id
+                                        );
+                                        toggleItemDropdown(index);
+                                      }}
+                                    >
+                                      <div className="flex flex-col">
+                                        <span>{inv.name}</span>
+                                        <span className="text-sm text-gray-500">
+                                          SKU: {inv.sku} | Stock: {inv.stock}
+                                        </span>
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </TableCell>
+                      <TableCell>{item.sku}</TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={item.qty}
+                          onChange={(e) =>
+                            handleItemChange(
+                              index,
+                              "qty",
+                              Number(e.target.value)
+                            )
+                          }
+                          className="w-20"
                         />
                       </TableCell>
-                      <TableCell className="border-r ">
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.qty`}
-                          render={({ field }) => (
-                            <FormItem className="flex gap-4 w-full items-center">
-                              <div className="w-full  lg:flex flex-col">
-                                <FormControl>
-                                  <Input
-                                    className="bg-white border-none focus-within:bg-white active:bg-white"
-                                    {...field}
-                                    required
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </div>
-                            </FormItem>
-                          )}
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={item.rate}
+                          onChange={(e) =>
+                            handleItemChange(
+                              index,
+                              "rate",
+                              Number(e.target.value)
+                            )
+                          }
+                          className="w-24"
                         />
                       </TableCell>
-                      <TableCell className="border-r ">
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.rate`}
-                          render={({ field }) => (
-                            <FormItem className="flex gap-4 w-full  items-center">
-                              <div className="w-full lg:flex flex-col">
-                                <FormControl>
-                                  <Input
-                                    className="bg-white border-none focus-within:bg-white active:bg-white"
-                                    {...field}
-                                    required
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </div>
-                            </FormItem>
-                          )}
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={item.tax}
+                          onChange={(e) =>
+                            handleItemChange(
+                              index,
+                              "tax",
+                              Number(e.target.value)
+                            )
+                          }
+                          className="w-20"
                         />
                       </TableCell>
-                      <TableCell className="border-r ">
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.tax`}
-                          render={({ field }) => (
-                            <FormItem className="flex gap-4 w-full  items-center">
-                              <div className="w-full  lg:flex flex-col">
-                                <FormControl>
-                                  <Input
-                                    className="bg-white border-none focus-within:bg-white active:bg-white"
-                                    {...field}
-                                    required
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </div>
-                            </FormItem>
-                          )}
-                        />
+                      <TableCell className="font-medium">
+                        ${item.amount.toFixed(2)}
                       </TableCell>
-                      <TableCell className="font-bold border-r">
-                        Amt. 0.00
-                      </TableCell>
-                      <TableCell className="font-bold border-r">
+                      <TableCell>
                         <Button
                           type="button"
                           variant="destructive"
-                          onClick={() => index > 0 && remove(index)} // Prevent removal if index is 0
-                          disabled={index === 0}
+                          onClick={() => removeItem(index)}
+                          disabled={items.length === 1}
                         >
-                          <DeleteIcon />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -501,36 +425,24 @@ const AddOrderForm = () => {
                 </TableBody>
                 <TableFooter>
                   <TableRow>
-                    <Button
-                      variant={"link"}
-                      onClick={() =>
-                        append({
-                          itemDetails: "",
-                          qty: 1,
-                          rate: 0,
-                          tax: 0,
-                          amount: 0,
-                        })
-                      }
-                    >
-                      Add item
-                    </Button>
-                    <TableCell colSpan={3}>Total</TableCell>
-                    <TableCell className="text-right">$2,500.00</TableCell>
+                    <TableCell colSpan={5}>
+                      <Button type="button" variant="outline" onClick={addItem}>
+                        Add Item
+                      </Button>
+                    </TableCell>
+                    <TableCell className="font-bold">
+                      Total: ${calculateTotal().toFixed(2)}
+                    </TableCell>
+                    <TableCell />
                   </TableRow>
                 </TableFooter>
               </Table>
             </div>
           </div>
-        </div>
-
-        <div className="sticky bg-neutral-100 border-t border-neutral-200 bottom-0 p-4 space-x-2">
-          <Button variant="secondary">Save as draft</Button>
-          <Button type="submit">Save and Send</Button>
-        </div>
-      </form>
-    </Form>
+        }
+      />
+    </div>
   );
 };
 
-export default AddOrderForm;
+export default OrderForm;

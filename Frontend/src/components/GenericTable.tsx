@@ -28,22 +28,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronDownIcon, EllipsisVertical } from "lucide-react";
+import { ChevronDownIcon, EllipsisVertical, Trash2 } from "lucide-react";
 import { Card } from "./ui/card";
-import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface GenericTableProps<T> {
   data: T[];
   columns: ColumnDef<T>[];
   viewMode: "Table" | "Card";
+  context: string;
+  onDeleteSelected?: (selectedIds: string[]) => void;
 }
 
 export function GenericTable<T>({
   data,
   columns,
   viewMode,
+  context,
+  detailsPath = "item", // Default to 'item' for backward compatibility
+  searchField = "name", // Default to 'name' for backward compatibility
+  onDeleteSelected,
+  searchPlaceholder = "Filter items...",
 }: GenericTableProps<T>) {
+  const navigate = useNavigate();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -59,6 +66,10 @@ export function GenericTable<T>({
       batchNumber: false, // Hidden by default
       category: false, // Hidden by default
       storageConditions: false, // Hidden by default
+      description: false, // Hidden by default
+      image: false, // Hidden by default
+      status: false, // Hidden by default
+      type: false, // Hidden by default
     });
   const [rowSelection, setRowSelection] = React.useState({});
   // const [viewMode, setViewMode] = React.useState<"table" | "card">("Table");
@@ -82,17 +93,41 @@ export function GenericTable<T>({
     },
   });
 
+  const handleDeleteSelected = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const selectedIds = selectedRows.map((row) => row.original.id);
+    onDeleteSelected?.(selectedIds);
+    setRowSelection({});
+  };
+
+  const handleRowClick = (id: string) => {
+    navigate(`/admin/${context}/${detailsPath}/${id}`);
+  };
+
   return (
     <div className="w-full">
       <div className="flex items-center gap-4 py-4">
         <Input
           placeholder="Filter stocks..."
           className="max-w-sm"
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          value={
+            (table.getColumn(searchField)?.getFilterValue() as string) ?? ""
+          }
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn(searchField)?.setFilterValue(event.target.value)
           }
         />
+        {Object.keys(rowSelection).length > 0 && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleDeleteSelected}
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete Selected ({Object.keys(rowSelection).length})
+          </Button>
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -117,31 +152,6 @@ export function GenericTable<T>({
                   </DropdownMenuCheckboxItem>
                 );
               })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <EllipsisVertical />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-full shadow-none p-8 px-4">
-            <Card
-              className={cn(
-                "w-full flex flex-col bg-transparent border-none shadow-none"
-              )}
-            >
-              {[
-                "Import Items",
-                "Export Items",
-                "Field Customization",
-                "Refresh List",
-              ].map((item, index) => (
-                <Link to={"/"} key={index}>
-                  {item}
-                </Link>
-              ))}
-            </Card>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -172,6 +182,17 @@ export function GenericTable<T>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={(e) => {
+                      // Prevent navigation when clicking checkbox or action buttons
+                      if (
+                        (e.target as HTMLElement).closest(
+                          'input[type="checkbox"], button, a'
+                        )
+                      )
+                        return;
+                      handleRowClick(row.original.id);
+                    }}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
@@ -207,7 +228,11 @@ export function GenericTable<T>({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {table.getRowModel().rows.map((row) => (
-            <Card key={row.id} className="p-4">
+            <Card
+              key={row.id}
+              className="p-4"
+              onClick={() => handleRowClick(row.original.id)}
+            >
               {row.getVisibleCells().map((cell) => (
                 <div key={cell.id} className="mb-2">
                   <strong>{cell.column.columnDef.header}: </strong>
@@ -222,6 +247,15 @@ export function GenericTable<T>({
                   )}
                 </div>
               ))}
+              <div className="mt-4 flex justify-end">
+                <Link
+                  to={`/inventory/item/edit/${row.original.id}`}
+                  className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                >
+                  <EllipsisVertical className="h-4 w-4 mr-2" />
+                  Edit
+                </Link>
+              </div>
             </Card>
           ))}
         </div>

@@ -18,14 +18,30 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useFetch } from "@/hooks/useFetch";
 import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { ColumnDef } from "@tanstack/react-table";
-import { LayoutGridIcon, List, PlusIcon, Upload } from "lucide-react";
-import { useState } from "react";
+import {
+  DownloadCloudIcon,
+  EllipsisVertical,
+  LayoutGridIcon,
+  List,
+  PlusIcon,
+  RefreshCwIcon,
+  SettingsIcon,
+  Upload,
+  UploadCloudIcon,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  deleteInventoryItem,
+  useFetchInventory,
+} from "@/services/InventoryAPI";
+import { PageHeader } from "../components/PageHeader";
+import EditItem from "./components/EditItem";
+import { toast } from "@/hooks/use-toast";
 
-type InventoryItem = {
+export type InventoryItem = {
   id: string;
   status: "good" | "low" | "critical";
   name: string;
@@ -161,11 +177,17 @@ const columns: ColumnDef<InventoryItem>[] = [
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(payment.id)}
             >
-              Copy payment ID
+              Copy Stock ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View More</DropdownMenuItem>
-            <DropdownMenuItem>View Suppliers</DropdownMenuItem>
+            <Link
+              to={`/admin/inventory/item/${payment.id}`}
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            >
+              <EllipsisVertical className="h-4 w-4 mr-2" />
+              Edit
+            </Link>
+            <DropdownMenuItem>Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -294,25 +316,65 @@ const CSVImportDialog = ({
 };
 
 const Inventory = () => {
-  const { data: inventory, loading, error } = useFetch("inventory");
+  const {
+    data: inventory,
+    loading,
+    error,
+    refetch,
+  } = useFetchInventory("inventory");
   const [viewMode, setViewMode] = useState("Table");
-  const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
+  const [localInventory, setLocalInventory] = useState<InventoryItem[]>([]);
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<null>(null);
 
-  const processedInventory =
-    inventoryData?.length > 0
-      ? inventoryData
-      : inventory?.map((item) => {
-          let status: "good" | "low" | "critical" = "good";
-          if (item.stock <= item.reorder) {
-            status = item.stock === 0 ? "critical" : "low";
-          }
-          return { ...item, status };
-        });
+  useEffect(() => {
+    if (inventory) {
+      const processedData = inventory.map((item: InventoryItem) => ({
+        ...item,
+        status:
+          item.stock <= item.reorder
+            ? item.stock === 0
+              ? "critical"
+              : "low"
+            : "good",
+      }));
+      setLocalInventory(processedData);
+    }
+  }, [inventory]);
 
   const handleImportSuccess = (importedData: InventoryItem[]) => {
-    setInventoryData(importedData);
-    // Here you might want to make an API call to save the imported data
-    // For now, we're just updating the local state
+    setLocalInventory((prev) => [...prev, ...importedData]);
+    // Optionally, make an API call to persist the imported data
+    refetch();
+  };
+
+  // const handleSubmit = async (data: any) => {
+  //   if (selectedItem?.id) {
+  //     await onUpdateItem(selectedItem.id, data);
+  //   }
+  // };
+
+  const handleViewMode = () => {
+    setViewMode(viewMode === "Table" ? "Card" : "Table");
+  };
+
+  const handleDeleteItems = async (selectedIds: string[]) => {
+    // Add your deletion logic here
+    // e.g., API call to delete items
+    try {
+      const result = await deleteInventoryItem(selectedIds);
+
+      toast({
+        title: "Deleted",
+        description: `This is a success toast of`,
+        variant: "destructive",
+      });
+
+      refetch();
+      console.log("Deleting the item: ", selectedIds);
+    } catch (error) {
+      console.error("Failed to delete items:", error);
+    }
   };
 
   return (
@@ -320,47 +382,45 @@ const Inventory = () => {
       <HeaderTitle title="Inventory" />
 
       <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <section className="border-b py-4">
-          <header className="flex justify-between px-6">
-            <h1 className="text-2xl font-medium">All Items</h1>
-            <div className="inline-flex gap-4 items-center">
-              <CSVImportDialog onImportSuccess={handleImportSuccess} />
-
-              <Button asChild>
-                <Link to="add-item" className="flex items-center gap-1">
-                  <PlusIcon /> New
-                </Link>
-              </Button>
-
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setViewMode("Card")}
-                  className="rounded-s"
-                >
-                  <LayoutGridIcon />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setViewMode("Table")}
-                  className="rounded-e"
-                >
-                  <List />
-                </Button>
-              </div>
-            </div>
-          </header>
+        <section className="border-b py-0">
+          <PageHeader
+            handleViewMode={handleViewMode}
+            title="All Inventory"
+            newButtonLink="/admin/inventory/add-item"
+            actions={[
+              {
+                label: "Import Suppliers",
+                icon: <UploadCloudIcon className="h-4 w-4" />,
+                // onClick: handleImport,
+              },
+              {
+                label: "Export Suppliers",
+                icon: <DownloadCloudIcon className="h-4 w-4" />,
+                // onClick: handleExport,
+              },
+              {
+                label: "Preferences",
+                icon: <SettingsIcon className="h-4 w-4" />,
+                link: "/admin/suppliers/preference",
+              },
+              {
+                label: "Refresh List",
+                icon: <RefreshCwIcon className="h-4 w-4" />,
+                // onClick: handleRefresh,
+              },
+            ]}
+          />
         </section>
         <section className="p-6 ">
           {loading ? (
             <p>Loading...</p>
-          ) : processedInventory && processedInventory.length > 0 ? (
+          ) : localInventory && localInventory.length > 0 ? (
             <GenericTable
               viewMode={viewMode}
-              data={processedInventory}
+              data={localInventory}
               columns={columns}
+              context="inventory"
+              onDeleteSelected={handleDeleteItems}
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3">
@@ -368,7 +428,7 @@ const Inventory = () => {
                 <CardTitle>Add new Stock</CardTitle>
                 <CardDescription className="flex items-center flex-col gap-4">
                   <p>
-                    Create standalone items and services that you buy and sell{" "}
+                    Create standalone items and services that you buy and sell
                   </p>
 
                   <Button asChild>

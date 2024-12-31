@@ -12,7 +12,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { InventoryItem } from "../inventory/Inventory";
 export const description = "A donut chart";
 
 const chartData = [
@@ -23,36 +24,96 @@ const chartData = [
   { browser: "other", visitors: 190, fill: "var(--color-other)" },
 ];
 
-const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  chrome: {
-    label: "Chrome",
-    color: "hsl(var(--chart-1))",
-  },
-  safari: {
-    label: "Safari",
-    color: "hsl(var(--chart-2))",
-  },
-  firefox: {
-    label: "Firefox",
-    color: "hsl(var(--chart-3))",
-  },
-  edge: {
-    label: "Edge",
-    color: "hsl(var(--chart-4))",
-  },
-  other: {
-    label: "Other",
-    color: "hsl(var(--chart-5))",
-  },
-} satisfies ChartConfig;
+// const chartConfig = {
+//   visitors: {
+//     label: "Visitors",
+//   },
+//   chrome: {
+//     label: "Chrome",
+//     color: "hsl(var(--chart-1))",
+//   },
+//   safari: {
+//     label: "Safari",
+//     color: "hsl(var(--chart-2))",
+//   },
+//   firefox: {
+//     label: "Firefox",
+//     color: "hsl(var(--chart-3))",
+//   },
+//   edge: {
+//     label: "Edge",
+//     color: "hsl(var(--chart-4))",
+//   },
+//   other: {
+//     label: "Other",
+//     color: "hsl(var(--chart-5))",
+//   },
+// } satisfies ChartConfig;
 
-export function Chart() {
-  const totalVisitors = useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.visitors, 0);
+export function Chart({ inventory }: InventoryItem[]) {
+  const [chartData, setChartData] = useState(inventory);
+  const [chartConfig, setChartConfig] = useState({});
+
+  useEffect(() => {
+    // Transform inventory data into chart format
+    const groupedData = inventory.reduce((acc: any, curr: any) => {
+      const category = curr.category;
+      acc[category] = (acc[category] || 0) + curr.stock;
+      return acc;
+    }, {});
+
+    const transformedData = Object.entries(groupedData).map(
+      ([category, stock]: [string, number]) => ({
+        name: category,
+        visitors: stock,
+        fill: getCategoryColor(category),
+      })
+    );
+
+    // const transformedData = groupedData.map((item: any) => ({
+    //   name: item.category,
+    //   visitors: item.stock,
+    //   fill: getCategoryColor(item.category), // Assign colors dynamically
+    // }));
+
+    setChartData(transformedData);
+
+    // Dynamically create chart config
+    const generatedConfig = Object.keys(groupedData).reduce(
+      (config: any, category: string, index: number) => {
+        config[category] = {
+          label: capitalize(category),
+          color: getCategoryColor(category),
+        };
+        return config;
+      },
+      { visitors: { label: "Visitors" } }
+    );
+
+    setChartConfig(generatedConfig);
   }, []);
+
+  const totalItems = useMemo(() => {
+    return chartData.reduce((acc, curr) => acc + curr.visitors, 0);
+  }, [chartData]);
+
+  // Helper function to assign colors dynamically
+  const getCategoryColor = (category: string) => {
+    const colorMap: Record<string, string> = {
+      equipment: "hsl(var(--chart-1))",
+      medicine: "hsl(var(--chart-2))",
+      service: "hsl(var(--chart-3))",
+    };
+    return colorMap[category] || "hsl(var(--chart-5))";
+  };
+
+  // Helper function to capitalize category names
+  const capitalize = (str: string) =>
+    str.charAt(0).toUpperCase() + str.slice(1);
+
+  if (!chartData.length || !Object.keys(chartConfig).length) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Card className="flex border-none w-full flex-col">
@@ -92,7 +153,7 @@ export function Chart() {
                           y={viewBox.cy}
                           className="fill-foreground text-3xl font-bold"
                         >
-                          {totalVisitors.toLocaleString()}
+                          {totalItems.toLocaleString()}
                         </tspan>
                         <tspan
                           x={viewBox.cx}

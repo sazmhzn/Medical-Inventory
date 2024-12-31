@@ -1,9 +1,8 @@
 import HeaderTitle from "@/components/commons/header-title";
 import { GenericTable } from "@/components/GenericTable";
 import { Button } from "@/components/ui/button";
-import { useFetch } from "@/hooks/useFetch";
 import { Info, PlusIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   DropdownMenu,
@@ -15,6 +14,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { useFetchInventory } from "@/services/InventoryAPI";
+import { InventoryItem } from "../inventory/Inventory";
+import { useFetchOrder } from "@/services/OrderAPI";
+import { ColumnDef } from "@tanstack/react-table";
 
 const columns: ColumnDef[] = [
   {
@@ -44,7 +47,7 @@ const columns: ColumnDef[] = [
     header: "Status",
   },
   {
-    accessorKey: "orderId",
+    accessorKey: "id",
     header: "Order Id",
   },
   {
@@ -52,7 +55,7 @@ const columns: ColumnDef[] = [
     header: "supplierId",
   },
   {
-    accessorKey: "date",
+    accessorKey: "createdDate",
     header: "Date",
   },
   {
@@ -100,16 +103,29 @@ const columns: ColumnDef[] = [
 ];
 
 const Order = () => {
-  const { data: inventory, loading, error } = useFetch("orders");
+  const { data: orders, loading, error, refetch } = useFetchOrder();
   const [viewMode, setViewMode] = useState("Table");
+  const [localInventory, setLocalInventory] = useState<InventoryItem[]>([]);
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<null>(null);
 
-  const processedInventory = inventory?.map((item) => {
-    let status: "good" | "low" | "critical" = "good";
-    if (item.stock <= item.reorder) {
-      status = item.stock === 0 ? "critical" : "low";
+  const handleDeleteOrder = async (selectedIds: string[]) => {
+    try {
+      // const result = await deleteInventorOrder(selectedIds);
+
+      toast({
+        title: "Deleted",
+        description: `This is a success toast of`,
+        variant: "destructive",
+      });
+
+      refetch();
+      console.log("Deleting the item: ", selectedIds);
+    } catch (error) {
+      console.error("Failed to delete items:", error);
     }
-    return { ...item, status };
-  });
+  };
+
   return (
     <div className="w-full">
       <HeaderTitle />
@@ -127,7 +143,7 @@ const Order = () => {
               </div>
               <Button asChild>
                 <Link
-                  to="/orders/add-order"
+                  to="/admin/orders/add-order"
                   className="flex items-center gap-1"
                 >
                   <PlusIcon /> New
@@ -140,11 +156,14 @@ const Order = () => {
         <section className="p-6 ">
           {loading ? (
             <p>Loading...</p>
-          ) : processedInventory && processedInventory.length > 0 ? (
+          ) : orders && orders.length > 0 ? (
             <GenericTable
               viewMode={viewMode}
-              data={processedInventory}
+              data={orders}
               columns={columns}
+              context="orders"
+              detailsPath="details"
+              onDeleteSelected={handleDeleteOrder}
             />
           ) : (
             <section className="p-6 ">

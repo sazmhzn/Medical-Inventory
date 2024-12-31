@@ -22,6 +22,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { useFetchInventory } from "@/services/InventoryAPI";
+import { InventoryItem } from "./inventory/Inventory";
 
 interface StockData {
   totalStock: number;
@@ -76,12 +78,61 @@ const chartConfig = {
 
 const Dashboard = () => {
   const [stockData, setStockData] = useState<StockData | null>(null);
+  const {
+    data: inventory,
+    loading,
+    error,
+    refetch,
+  } = useFetchInventory("inventory");
+  const [summary, setSummary] = useState({
+    quantityInHand: 0,
+    quantityToBeReceived: 0,
+    lowStockItems: 0,
+    allItemGroups: 0,
+    allItems: 0,
+  });
+
   useEffect(() => {
-    fetchStockData().then((data) => setStockData(data));
-  }, []);
+    if (inventory) {
+      const processedData = inventory.map((item: InventoryItem) => ({
+        ...item,
+        status:
+          item.stock <= item.reorder
+            ? item.stock === 0
+              ? "critical"
+              : "low"
+            : "good",
+      }));
+      setStockData(processedData);
+      // Calculate summary data
+      const quantityInHand = inventory.reduce(
+        (sum, item) => sum + item.stock,
+        0
+      );
+      const quantityToBeReceived = inventory.reduce(
+        (sum, item) => (item.stock < item.reorder ? sum + item.reorder : sum),
+        0
+      );
+      const lowStockItems = inventory.filter(
+        (item) => item.stock < item.reorder
+      ).length;
+      const allItemGroups = new Set(inventory.map((item) => item.category))
+        .size;
+      const allItems = inventory.length;
+
+      setSummary({
+        quantityInHand,
+        quantityToBeReceived,
+        lowStockItems,
+        allItemGroups,
+        allItems,
+      });
+      sessionStorage.setItem("stockData", JSON.stringify(processedData));
+    }
+  }, [inventory]);
 
   if (!stockData) {
-    return <div>Loading...</div>;
+    return <div>Loading</div>;
   }
 
   return (
@@ -89,7 +140,7 @@ const Dashboard = () => {
       <HeaderTitle title="Dashbaord" />
       <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <Tabs defaultValue="dashboard">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-4 rounded-none">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="starter">Getting Started</TabsTrigger>
             <TabsTrigger value="updates">Recent Updates</TabsTrigger>
@@ -103,7 +154,7 @@ const Dashboard = () => {
                   <header className="bg-gray-100 p-4">
                     <h3 className="text-xl text-neutral-800">Sales Activity</h3>
                   </header>
-                  <div className="flex justify-between items-center">
+                  <div className="flex bg-white justify-between items-center">
                     <div className="p-4 flex flex-col items-center">
                       <div className=" text-center mb-4">
                         <h1 className="text-5xl font-semibold text-blue-500">
@@ -172,7 +223,7 @@ const Dashboard = () => {
                         Quantity in hand
                       </h1>
                       <p className="text-xl font-semibold text-neutral-800">
-                        0
+                        {summary.quantityInHand}
                       </p>
                     </div>
                     <Separator orientation="horizontal" className="mb-4" />
@@ -181,7 +232,7 @@ const Dashboard = () => {
                         Quantity to be received
                       </h1>
                       <p className="text-xl font-semibold text-neutral-800">
-                        0
+                        {summary.quantityToBeReceived}
                       </p>
                     </div>
                   </div>
@@ -191,7 +242,7 @@ const Dashboard = () => {
 
             <section>
               <div className="grid md:grid-cols-2 gap-4">
-                <article className="border rounded-lg overflow-hidden w-full">
+                <article className="border bg-white rounded-lg overflow-hidden w-full">
                   {/* <DataTable data={getTasks} columns={columns} /> */}
                   {/* <DataTable /> */}
                   <header className="bg-gray-100 p-4">
@@ -199,9 +250,9 @@ const Dashboard = () => {
                       Product Details
                     </h3>
                   </header>
-                  <div className="flex md:flex-col flex-col justify-between items-center">
+                  <div className="flex bg-white md:flex-col flex-col justify-between items-center">
                     <div className="p-0 w-full flex flex-col items-center">
-                      <Chart />
+                      <Chart inventory={stockData} />
                     </div>
                     <Separator
                       orientation="horizontal"
@@ -213,14 +264,16 @@ const Dashboard = () => {
                         <h1 className="text-md font-normal text-red-400 uppercase">
                           Low Stock Items
                         </h1>
-                        <p className="text-xl font-semibold text-red-600">0</p>
+                        <p className="text-xl font-semibold text-red-600">
+                          {summary.lowStockItems}
+                        </p>
                       </div>
                       <div className="flex justify-between mb-4">
                         <h1 className="text-md font-normal text-neutral-400 uppercase">
                           All Items Groups
                         </h1>
                         <p className="text-xl font-semibold text-neutral-800">
-                          0
+                          {summary.allItemGroups}
                         </p>
                       </div>
                       <div className="flex justify-between mb-4">
@@ -228,7 +281,7 @@ const Dashboard = () => {
                           All Items
                         </h1>
                         <p className="text-xl font-semibold text-neutral-800">
-                          0
+                          {summary.allItems}
                         </p>
                       </div>
                     </div>
