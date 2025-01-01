@@ -141,10 +141,11 @@ const EditItem = () => {
     },
   ];
 
-  const handleSubmit = (data: Record<string, any>) => {
+  const handleSubmit = async (data: Record<string, any>) => {
+    console.log("clicked");
     try {
-      // const result = await updateInventoryItem(id, data);
-
+      const result = await updateInventoryItem(id, data);
+      console.log(data);
       alert("Item added successfully!");
     } catch (error) {
       console.error("Error submitting form:", error);

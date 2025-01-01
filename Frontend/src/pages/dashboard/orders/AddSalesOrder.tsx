@@ -1,5 +1,4 @@
 import AddFormContainer from "@/components/AddFormContainer";
-import AddOrderForm from "./components/AddOrderForm";
 import { SupplierSelect } from "./components/SupplierSelect";
 import { OrderItemsTable } from "./components/OrderItemsTable";
 import { calculateTotal } from "@/utils/orderCalculations";
@@ -96,7 +95,7 @@ const AddSalesOrders = () => {
       });
       console.log("Order Items JSON:", JSON.stringify(orderData, null, 2));
 
-      // const result = await postOrder(orderData);
+      const result = await postOrder(orderData);
       console.log("Item added successfully:", orderData);
     } catch (err) {
       console.log(err);

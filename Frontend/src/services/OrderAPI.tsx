@@ -4,7 +4,16 @@ import axios from "axios";
 const BASE_URL = "http://localhost:8080/mis/order";
 const base64Credentials = btoa("admin:admin123"); // Encode username and password
 
-// Custom Hook for Fetching Inventory Data
+// Axios instance for reusable config
+const axiosInstance = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    Authorization: `Basic ${base64Credentials}`,
+    "Content-Type": "application/json",
+  },
+});
+
+// Custom Hook for Fetching Orders
 export const useFetchOrder = () => {
   const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -13,11 +22,7 @@ export const useFetchOrder = () => {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}`, {
-        headers: {
-          Authorization: `Basic ${base64Credentials}`,
-        },
-      });
+      const response = await axiosInstance.get("");
       setData(response.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -33,6 +38,7 @@ export const useFetchOrder = () => {
   return { data, loading, error, refetch: fetchData };
 };
 
+// Custom Hook for Fetching an Order by ID
 export const useFetchOrderById = (id: string | undefined) => {
   const [data, setData] = useState<any>(null); // Adjust type if API response is known
   const [loading, setLoading] = useState<boolean>(true);
@@ -43,11 +49,7 @@ export const useFetchOrderById = (id: string | undefined) => {
 
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}/${id}`, {
-        headers: {
-          Authorization: `Basic ${base64Credentials}`,
-        },
-      });
+      const response = await axiosInstance.get(`/${id}`);
       setData(response.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -63,24 +65,40 @@ export const useFetchOrderById = (id: string | undefined) => {
   return { data, loading, error, refetch: fetchData };
 };
 
+// Function to Post a New Order
 export const postOrder = async (data: Record<string, any>) => {
   try {
-    const response = await fetch(`${BASE_URL}/save`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // Optionally add Authorization header here if needed:
-        Authorization: `Basic ${base64Credentials}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to submit the data");
-    }
-
-    return await response.json(); // Return the response as JSON
+    const response = await axiosInstance.post("/save", data);
+    return response.data; // Return the response as JSON
   } catch (error) {
-    throw new Error(error.message || "Error submitting the form");
+    throw new Error(
+      error instanceof Error ? error.message : "Error submitting the form"
+    );
+  }
+};
+
+// Function to Delete an Order by ID
+export const deleteOrder = async (id: string) => {
+  try {
+    const response = await axiosInstance.delete(`/${id}`);
+    return response.data; // Return the response as JSON
+  } catch (error) {
+    throw new Error(
+      error instanceof Error ? error.message : "Error deleting the item"
+    );
+  }
+};
+
+// Function to Bulk Delete Orders
+export const bulkDeleteOrders = async (ids: string[]) => {
+  try {
+    const response = await axiosInstance.delete("/bulk-delete", {
+      data: ids, // Pass the IDs as the request body
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error instanceof Error ? error.message : "Error deleting the items"
+    );
   }
 };

@@ -16,8 +16,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useFetchInventory } from "@/services/InventoryAPI";
 import { InventoryItem } from "../inventory/Inventory";
-import { useFetchOrder } from "@/services/OrderAPI";
+import {
+  bulkDeleteOrders,
+  deleteOrder,
+  useFetchOrder,
+} from "@/services/OrderAPI";
 import { ColumnDef } from "@tanstack/react-table";
+import { toast } from "@/hooks/use-toast";
 
 const columns: ColumnDef[] = [
   {
@@ -105,25 +110,32 @@ const columns: ColumnDef[] = [
 const Order = () => {
   const { data: orders, loading, error, refetch } = useFetchOrder();
   const [viewMode, setViewMode] = useState("Table");
-  const [localInventory, setLocalInventory] = useState<InventoryItem[]>([]);
-  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<null>(null);
 
   const handleDeleteOrder = async (selectedIds: string[]) => {
     try {
-      // const result = await deleteInventorOrder(selectedIds);
+      const result = await bulkDeleteOrders(selectedIds);
 
       toast({
         title: "Deleted",
-        description: `This is a success toast of`,
+        description: `${selectedIds.join(", ")} have been deleted`,
         variant: "destructive",
       });
 
-      refetch();
-      console.log("Deleting the item: ", selectedIds);
+      refetch(); // Refresh the data
+      console.log("Deleted items: ", result);
     } catch (error) {
       console.error("Failed to delete items:", error);
+
+      toast({
+        title: "Error",
+        description: "Failed to delete selected items",
+        variant: "destructive",
+      });
     }
+  };
+
+  const handleViewMode = () => {
+    setViewMode(viewMode === "Table" ? "Card" : "Table");
   };
 
   return (

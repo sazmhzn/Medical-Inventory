@@ -72,7 +72,12 @@ type FileFieldConfig = BaseFieldConfig & {
   };
 };
 
-export type FieldConfig = BaseFieldConfig | SelectFieldConfig | FileFieldConfig;
+export type FieldConfig =
+  | BaseFieldConfig
+  | SelectFieldConfig
+  | (FileFieldConfig & {
+      section: "default" | "other"; // Add section property
+    });
 
 interface DynamicFormProps {
   fields: FieldConfig[];
@@ -392,7 +397,7 @@ const FileField = memo(({ field, form, config }: any) => {
 
     // Convert to Blob
     const blob = new Blob([file], { type: file.type });
-    // field.onChange(blob);
+    field.onChange(blob);
   };
 
   const handleDownload = () => {
@@ -563,20 +568,16 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
     {
       context: "supplier",
       defaultFields: [
+        "type",
         "name",
+        "displayName",
         "email",
-        "phone.work",
-        "category",
+        "phoneWork",
+        "phonePersonal",
         "isPreferred",
         "price",
       ],
-      otherFields: [
-        "address",
-        "phone.home",
-        "website",
-        "contactPerson",
-        "bankDetails",
-      ],
+      otherFields: ["document"],
     },
     {
       context: "order",
@@ -594,15 +595,9 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
 
   const config = fieldConfig.find((item) => item.context === context);
 
-  const defaultFields = fields.filter((field) =>
-    config.defaultFields.includes(field.name)
-  );
+  const defaultFields = fields.filter((field) => field.section === "default");
 
-  const otherDetails = fields.filter(
-    (field) =>
-      !config.defaultFields.includes(field.name) &&
-      config.otherFields.includes(field.name)
-  );
+  const otherDetails = fields.filter((field) => field.section === "other");
   const combinedFields = [
     ...defaultFields,
     ...otherDetails,

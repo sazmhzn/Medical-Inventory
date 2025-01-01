@@ -68,7 +68,7 @@ const SettingsLayout = () => {
 
   return (
     <div className="flex">
-      <main className="w-full bg-green-200">
+      <main className="w-full">
         <Outlet />
       </main>
     </div>

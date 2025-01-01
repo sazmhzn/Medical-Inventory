@@ -92,15 +92,15 @@ export const OrderItemsTable = ({
   const addItem = () => {
     onItemsChange([
       ...items,
-      // {
-      //   id: items.length + 1,
-      //   inventoryId: 0,
-      //   name: "",
-      //   qty: 1,
-      //   rate: 0,
-      //   tax: 0,
-      //   amount: 0,
-      // },
+      {
+        id: items.length + 1,
+        inventoryId: 0,
+        name: "",
+        qty: 1,
+        rate: 0,
+        tax: 0,
+        amount: 0,
+      },
     ]);
   };
 

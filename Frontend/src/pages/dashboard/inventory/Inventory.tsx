@@ -348,12 +348,6 @@ const Inventory = () => {
     refetch();
   };
 
-  // const handleSubmit = async (data: any) => {
-  //   if (selectedItem?.id) {
-  //     await onUpdateItem(selectedItem.id, data);
-  //   }
-  // };
-
   const handleViewMode = () => {
     setViewMode(viewMode === "Table" ? "Card" : "Table");
   };
@@ -401,7 +395,7 @@ const Inventory = () => {
               {
                 label: "Preferences",
                 icon: <SettingsIcon className="h-4 w-4" />,
-                link: "/admin/suppliers/preference",
+                link: "/admin/settings/preferences/inventory",
               },
               {
                 label: "Refresh List",

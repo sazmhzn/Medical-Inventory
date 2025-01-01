@@ -244,7 +244,7 @@ const Suppliers = () => {
                 data={suppliers}
                 columns={columns}
                 onDeleteSelected={handleDeleteItems}
-                context="customers"
+                context="suppliers"
                 detailsPath="profile"
               />
             ) : (

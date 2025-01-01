@@ -14,11 +14,11 @@ const SupplierFormWithTabs = () => {
       required: true,
       gridWidth: "full",
       options: [
-        { value: "good", label: "Good" },
-        { value: "service", label: "Service" },
+        { value: "BUSINESS", label: "Business" },
+        { value: "INDIVIDUAL", label: "Individual" },
       ],
       tooltipContent:
-        "Select if this item is a physical good or a service. Remember that you cannot change the type if this item is included in a transaction.",
+        "The contacts which are associated to any Account in CRM is of type Business and the other contacts will be of type Individual.",
     },
     {
       name: "name",
@@ -81,7 +81,8 @@ const SupplierFormWithTabs = () => {
       name: "document",
       label: "Company Document",
       type: "file",
-      required: true,
+      required: false,
+      
       validation: {
         acceptedFileTypes: [".pdf", ".doc", ".docx"],
         maxFileSize: 5 * 1024 * 1024, // 5MB
@@ -99,6 +100,7 @@ const SupplierFormWithTabs = () => {
     <div className="">
       {/* Default Fields Section */}
       <DynamicFormGenerator
+        context="supplier"
         fields={supplierFields}
         onSubmit={handleSupplierSubmit}
       />

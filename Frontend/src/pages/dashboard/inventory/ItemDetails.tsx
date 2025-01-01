@@ -11,7 +11,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BackHeader } from "../components/PageHeader";
@@ -26,7 +25,7 @@ export function ItemDetails() {
     data: inventoryList,
     loading: listLoading,
     error: listError,
-  } = useFetchInventory();
+  } = useFetchInventory("item");
 
   const handleItemClick = (itemId: string) => {
     navigate(`/admin/inventory/item/${itemId}`);
@@ -213,7 +212,7 @@ export function ItemDetails() {
                   <div className="mt-8">
                     <h3 className="font-medium mb-3">Product Image</h3>
                     <img
-                      src={itemDetails.image}
+                      src={`data:image/jpeg;base64,${itemDetails.image}`}
                       alt={`${itemDetails.name} image`}
                       className="w-64 h-64 object-cover rounded-lg border"
                     />

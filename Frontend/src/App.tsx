@@ -8,7 +8,6 @@ import Report from "./pages/dashboard/reports/Report";
 import DashboardLayout from "./pages/dashboard/DashboardLayout";
 import Layout from "./pages/landing/Layout";
 import Home from "./pages/landing/Home";
-import ProtectedRoute from "./routes/ProtectedRoute";
 import Order from "./pages/dashboard/orders/Order";
 import AddSalesOrders from "./pages/dashboard/orders/AddSalesOrder";
 import Suppliers from "./pages/dashboard/suppliers/Suppliers";
@@ -25,6 +24,9 @@ import AddCustomField from "./pages/dashboard/settings/components/AddCustomField
 import EditItem from "./pages/dashboard/inventory/components/EditItem";
 import { ItemDetails } from "./pages/dashboard/inventory/ItemDetails";
 import { Toaster } from "./components/ui/toaster";
+import { OrderDetails } from "./pages/dashboard/orders/components/OrderDetails";
+import { SupplierDetails } from "./pages/dashboard/suppliers/components/SupplierDetails";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 const ErrorFallback = () => {
   return (
@@ -36,6 +38,8 @@ const ErrorFallback = () => {
     </div>
   );
 };
+
+// Create a client
 
 function App() {
   return (
@@ -63,11 +67,13 @@ function App() {
           <Route path="orders">
             <Route index element={<Order />} />
             <Route path="add-order" element={<AddSalesOrders />} />
+            <Route path="details/:id" element={<OrderDetails />} />
           </Route>
 
           <Route path="suppliers">
             <Route index element={<Suppliers />} />
             <Route path="add-suppliers" element={<AddSuppliers />} />
+            <Route path="profile/:id" element={<SupplierDetails />} />
           </Route>
 
           <Route path="reports" element={<ReportLayout />}>
