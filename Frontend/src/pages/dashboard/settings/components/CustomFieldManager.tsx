@@ -15,10 +15,6 @@ interface CustomField {
   entityType: string;
 }
 
-interface CustomFieldValue {
-  fieldId: string;
-  value: any;
-}
 
 const CustomFieldManager = ({ entityType, onCustomFieldsChange }) => {
   const [customFields, setCustomFields] = useState<CustomField[]>([]);

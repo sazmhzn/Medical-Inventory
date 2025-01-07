@@ -9,6 +9,7 @@ import DynamicFormGenerator, {
 } from "@/pages/test/__testDynamicForm";
 import { postOrder } from "@/services/OrderAPI";
 import { toast, useToast } from "@/hooks/use-toast";
+import { orderFields } from "@/config/OrderFields";
 
 const AddSalesOrders = () => {
   const { toast } = useToast();
@@ -24,55 +25,6 @@ const AddSalesOrders = () => {
       amount: 0,
     },
   ]);
-
-  const orderFields: FieldConfig[] = [
-    {
-      name: "companyName",
-      label: "Company",
-      type: "select",
-      gridWidth: "full",
-      options: [
-        { value: "medicine", label: "Medicine" },
-        { value: "equipment", label: "Equipment" },
-        { value: "supplies", label: "Supplies" },
-        { value: "supplement", label: "Supplement" },
-      ],
-      required: true,
-    },
-    {
-      name: "salesOrder",
-      label: "Sales Order #",
-      type: "text",
-      required: true,
-      gridWidth: "half",
-    },
-    {
-      name: "salesOrderDate",
-      label: "Sales Order Date",
-      type: "date",
-      required: true,
-      gridWidth: "half",
-    },
-    {
-      name: "shipmentDate",
-      label: "Expected Shipment Date",
-      type: "date",
-      required: true,
-      gridWidth: "half",
-    },
-    {
-      name: "paymentTerms",
-      label: "Payment Terms",
-      type: "select",
-      required: true,
-      gridWidth: "half",
-      options: [
-        { value: "net30", label: "Net 30" },
-        { value: "net60", label: "Net 60" },
-        { value: "immediate", label: "Immediate" },
-      ],
-    },
-  ];
 
   const handleSubmit = async (formData: any) => {
     const orderData = {

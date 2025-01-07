@@ -1,5 +1,6 @@
 export interface CustomField {
   id: string;
+  name?: string;
   label: string;
   dataType:
     | "text"

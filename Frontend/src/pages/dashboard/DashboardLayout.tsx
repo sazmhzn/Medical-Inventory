@@ -174,9 +174,9 @@ const DashboardLayout = () => {
         isActive: location.pathname === "/admin/settings/preferences/orders",
       },
       {
-        title: "Inventory Adjustment",
+        title: "Inventory",
         url: "/admin/settings/preferences/inventory",
-        icon: BookOpen,
+        icon: Bot,
         isActive: location.pathname === "/admin/settings/preferences/inventory",
       },
     ],

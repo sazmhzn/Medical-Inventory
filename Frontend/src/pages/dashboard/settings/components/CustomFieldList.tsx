@@ -11,26 +11,31 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CustomField } from "types/customFields";
 import { PageHeader } from "../../components/PageHeader";
+import {
+  CustomFormField,
+  deleteCustomForm,
+  deleteFields,
+  updateFormFields,
+  useFetchCustomFormsByEntityType,
+} from "@/services/CustomFormAPI";
+import { DialogHeader, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 
-interface CustomFieldsListProps {
+export interface CustomFieldsListProps {
   entityType: "inventory" | "suppliers" | "order";
+  formName?: string;
 }
 
 export const CustomFieldsList: React.FC<CustomFieldsListProps> = ({
   entityType,
+  formName = "inventoryCustomField",
 }) => {
   const navigate = useNavigate();
-  const [fields, setFields] = useState<CustomField[]>([]);
-
-  // Fetch fields from localStorage or API
-  useEffect(() => {
-    const savedFields = localStorage.getItem(`customFields_${entityType}`);
-    if (savedFields) {
-      setFields(JSON.parse(savedFields));
-    }
-  }, [entityType]);
+  const { data, loading, error, refetch } =
+    useFetchCustomFormsByEntityType(entityType);
+  const [selectedField, setSelectedField] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
   const getTitle = () => {
     switch (entityType) {
@@ -43,11 +48,25 @@ export const CustomFieldsList: React.FC<CustomFieldsListProps> = ({
     }
   };
 
+  const handleDelete = async (fieldName: string) => {
+    console.log("inside the handle delete");
+    try {
+      await deleteFields(entityType, formName, [{ name: fieldName }]);
+      refetch(); // Refresh the data
+    } catch (error) {
+      alert(
+        error instanceof Error ? error.message : "Error deleting the field"
+      );
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <div className="p-4">
       <PageHeader
         title={getTitle()}
-        mode="list"
         newButtonLink={`/admin/settings/preferences/${entityType}/add`}
       />
 
@@ -55,6 +74,7 @@ export const CustomFieldsList: React.FC<CustomFieldsListProps> = ({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Name</TableHead>
               <TableHead>Label</TableHead>
               <TableHead>Data Type</TableHead>
               <TableHead>Required</TableHead>
@@ -63,41 +83,67 @@ export const CustomFieldsList: React.FC<CustomFieldsListProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {fields.map((field) => (
-              <TableRow key={field.id}>
-                <TableCell className="font-medium">{field.label}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary">{field.dataType}</Badge>
-                </TableCell>
-                <TableCell>{field.isRequired ? "Yes" : "No"}</TableCell>
-                <TableCell>{field.defaultValue || "-"}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() =>
-                        navigate(
-                          `/admin/settings/preferences/${entityType}/edit/${field.id}`
-                        )
-                      }
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      // onClick={() => handleDelete(field.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {data?.map((form) =>
+              form.formConfig.fields.map((field) => (
+                <TableRow key={field.name}>
+                  <TableCell className="font-medium">{field.name}</TableCell>
+                  <TableCell className="font-medium">{field.label}</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{field.type}</Badge>
+                  </TableCell>
+                  <TableCell>{field.required ? "Yes" : "No"}</TableCell>
+                  <TableCell>{field.defaultValue || "-"}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          navigate(
+                            `/admin/settings/preferences/${entityType}/edit/${form.id}`
+                          )
+                        }
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setSelectedField(field.name);
+                          setIsDialogOpen(true);
+                          handleDelete(field.name);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
+      {isDialogOpen && (
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogHeader>
+            <h2>Confirm Deletion</h2>
+          </DialogHeader>
+          <DialogContent>
+            Are you sure you want to delete this custom field? This action
+            cannot be undone.
+          </DialogContent>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={() => handleDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </Dialog>
+      )}
     </div>
   );
 };

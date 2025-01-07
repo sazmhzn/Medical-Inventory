@@ -22,6 +22,7 @@ interface PageHeaderProps {
   title: string;
   newButtonLink?: string;
   backButtonLink?: string;
+  handleViewMode?: (viewMode: string) => void;
   primaryAction?: {
     label: string;
     onClick?: () => void;
@@ -39,7 +40,6 @@ interface PageHeaderProps {
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
-
   newButtonLink,
   backButtonLink,
   actions = [],

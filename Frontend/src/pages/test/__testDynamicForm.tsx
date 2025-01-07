@@ -56,6 +56,7 @@ type BaseFieldConfig = {
   };
   tooltipContent?: string;
   defaultValue?: any;
+  section: "default" | "other" | "custom";
 };
 
 type SelectFieldConfig = BaseFieldConfig & {
@@ -509,7 +510,6 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
         return "col-span-2 md:col-span-1"; // Default to half width on medium screens
     }
   };
-  const [customFields, setCustomFields] = useState<FieldConfig[]>([]);
   const handleAddCustomField = (field: FieldConfig) => {
     setCustomFields((prev) => [...prev, field]);
   };
@@ -598,6 +598,9 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
   const defaultFields = fields.filter((field) => field.section === "default");
 
   const otherDetails = fields.filter((field) => field.section === "other");
+
+  const customFields = fields.filter((field) => field.section === "custom");
+
   const combinedFields = [
     ...defaultFields,
     ...otherDetails,

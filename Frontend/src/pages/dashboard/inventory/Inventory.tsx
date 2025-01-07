@@ -28,6 +28,7 @@ import {
   PlusIcon,
   RefreshCwIcon,
   SettingsIcon,
+  Table,
   Upload,
   UploadCloudIcon,
 } from "lucide-react";
@@ -40,6 +41,18 @@ import {
 import { PageHeader } from "../components/PageHeader";
 import EditItem from "./components/EditItem";
 import { toast } from "@/hooks/use-toast";
+import {
+  useDeleteInventoryItem,
+  useInventory,
+} from "@/services/__test_inventoryAPI";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table";
 
 export type InventoryItem = {
   id: string;
@@ -316,16 +329,23 @@ const CSVImportDialog = ({
 };
 
 const Inventory = () => {
+  // const {
+  //   data: inventory,
+  //   loading,
+  //   error,
+  //   refetch,
+  // } = useFetchInventory("inventory");
+
   const {
     data: inventory,
-    loading,
+    isLoading: loading,
     error,
     refetch,
-  } = useFetchInventory("inventory");
-  const [viewMode, setViewMode] = useState("Table");
+  } = useInventory();
+  const deleteMutation = useDeleteInventoryItem();
+
+  const [viewMode, setViewMode] = useState<String>("Table");
   const [localInventory, setLocalInventory] = useState<InventoryItem[]>([]);
-  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<null>(null);
 
   useEffect(() => {
     if (inventory) {
@@ -344,7 +364,6 @@ const Inventory = () => {
 
   const handleImportSuccess = (importedData: InventoryItem[]) => {
     setLocalInventory((prev) => [...prev, ...importedData]);
-    // Optionally, make an API call to persist the imported data
     refetch();
   };
 
@@ -353,23 +372,34 @@ const Inventory = () => {
   };
 
   const handleDeleteItems = async (selectedIds: string[]) => {
-    // Add your deletion logic here
-    // e.g., API call to delete items
     try {
-      const result = await deleteInventoryItem(selectedIds);
+      // const result = await deleteInventoryItem(selectedIds);
 
+      await Promise.all(
+        selectedIds.map((id) =>
+          deleteMutation.mutateAsync(id, {
+            onSuccess: () => {
+              toast({
+                title: "Deleted",
+                description: `Item deleted successfully`,
+                variant: "destructive",
+              });
+            },
+          })
+        )
+      );
+      refetch();
+    } catch (error) {
       toast({
-        title: "Deleted",
-        description: `This is a success toast of`,
+        title: "Error",
+        description: "Failed to delete items",
         variant: "destructive",
       });
-
-      refetch();
-      console.log("Deleting the item: ", selectedIds);
-    } catch (error) {
       console.error("Failed to delete items:", error);
     }
   };
+
+  const skeletonRows = Array.from({ length: 5 }, (_, index) => index);
 
   return (
     <div className="w-full">
@@ -407,7 +437,11 @@ const Inventory = () => {
         </section>
         <section className="p-6 ">
           {loading ? (
-            <p>Loading...</p>
+            viewMode === "Table" ? (
+              <InventoryTableSkeleton />
+            ) : (
+              <InventoryCardSkeleton />
+            )
           ) : localInventory && localInventory.length > 0 ? (
             <GenericTable
               viewMode={viewMode}
@@ -439,3 +473,155 @@ const Inventory = () => {
 };
 
 export default Inventory;
+
+export const InventoryTableSkeleton = () => {
+  // Generate 5 skeleton rows by default
+  const skeletonRows = Array.from({ length: 5 }, (_, index) => index);
+
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[50px]">
+              <Skeleton className="h-4 w-4" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[60px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[100px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[50px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[60px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[70px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[60px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[70px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[50px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[90px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[100px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[80px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[80px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[120px]" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-[100px]" />
+            </TableHead>
+            <TableHead className="w-[50px]">
+              <Skeleton className="h-4 w-4" />
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {skeletonRows.map((index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <Skeleton className="h-4 w-4" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[60px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[100px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-8 w-8 rounded-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[60px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[70px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[60px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[70px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[50px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[90px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[100px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[80px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[80px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[120px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-[100px]" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-8 w-8" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+};
+
+// Card view skeleton for when the view mode is set to "Card"
+export const InventoryCardSkeleton = () => {
+  const skeletonCards = Array.from({ length: 6 }, (_, index) => index);
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {skeletonCards.map((index) => (
+        <div
+          key={index}
+          className="rounded-lg border bg-card text-card-foreground shadow-sm p-6"
+        >
+          <div className="flex items-start justify-between space-y-4">
+            <div className="space-y-4 w-full">
+              <Skeleton className="h-4 w-[150px]" />
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-[60%]" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[80%]" />
+                <Skeleton className="h-4 w-[70%]" />
+                <Skeleton className="h-4 w-[60%]" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};

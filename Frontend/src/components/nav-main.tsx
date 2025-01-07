@@ -23,7 +23,7 @@ export function NavMain({ items }) {
               <div className="flex items-center gap-3 text-gray-700">
                 <item.icon
                   className={cn(
-                    "h-4 w-4",
+                    "h-4 w-4 aspect-square",
                     item.isActive
                       ? "text-blue-600"
                       : "text-gray-400 group-hover:text-gray-600"

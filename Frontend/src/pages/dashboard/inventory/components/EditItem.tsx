@@ -11,135 +11,151 @@ import DynamicFormGenerator, {
 } from "@/pages/test/__testDynamicForm";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BackHeader } from "../../components/PageHeader";
+import { useFieldManager } from "@/pages/test/__useFieldManager";
+import { getCustomFields } from "@/lib/customFileManager";
+import { useMemo } from "react";
+import { itemFields } from "@/config/ItemFields";
 
 const EditItem = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: itemDetails, loading, error } = useFetchInventoryById(id);
 
-  const units = [
-    { value: "bottle", label: "Bottle" },
-    { value: "box", label: "Box" },
-    { value: "pack", label: "Pack" },
-    { value: "strips", label: "Strips" },
-  ];
+  const customFields = getCustomFields("custom");
 
-  const itemFields: FieldConfig[] = [
-    {
-      name: "type",
-      label: "Type",
-      type: "radio",
-      required: true,
-      gridWidth: "full",
-      options: [
-        { value: "GOODS", label: "Good" },
-        { value: "SERVICE", label: "Service" },
-      ],
-      tooltipContent: "Select if this item is a physical good or a service.",
-    },
-    {
-      name: "name",
-      label: "Name",
-      type: "text",
-      gridWidth: "full",
-      required: true,
-    },
-    {
-      name: "description",
-      label: "Description",
-      type: "text",
-      gridWidth: "full",
-      required: false,
-    },
-    {
-      name: "sku",
-      label: "SKU",
-      type: "text",
-      gridWidth: "half",
-      required: false,
-    },
-    {
-      name: "unit",
-      label: "Unit",
-      type: "select",
-      gridWidth: "half",
-      options: units,
-      required: true,
-    },
-    {
-      name: "category",
-      label: "Category",
-      type: "select",
-      gridWidth: "full",
-      options: [
-        { value: "medicine", label: "Medicine" },
-        { value: "equipment", label: "Equipment" },
-        { value: "supplies", label: "Supplies" },
-        { value: "supplement", label: "Supplement" },
-      ],
-      required: true,
-    },
-    {
-      name: "stock",
-      label: "Current Stock",
-      type: "number",
-      gridWidth: "half",
-      required: true,
-    },
-    {
-      name: "price",
-      label: "Price",
-      type: "number",
-      gridWidth: "half",
-      required: true,
-    },
-    {
-      name: "reorder",
-      label: "Reorder Point",
-      type: "number",
-      gridWidth: "half",
-      required: false,
-    },
-    {
-      name: "expiryDate",
-      label: "Expiry Date",
-      type: "date",
-      gridWidth: "half",
-      required: false,
-    },
-    {
-      name: "manufacturer",
-      label: "Manufacturer",
-      type: "text",
-      gridWidth: "full",
-      required: false,
-    },
-    {
-      name: "batchNumber",
-      label: "Batch Number",
-      type: "text",
-      gridWidth: "full",
-      required: true,
-    },
-    {
-      name: "storageConditions",
-      label: "Storage Conditions",
-      type: "text",
-      gridWidth: "full",
-      required: false,
-    },
-    {
-      name: "image",
-      label: "Product Image",
-      type: "file",
-      gridWidth: "full",
-      required: false,
-      validation: {
-        acceptedFileTypes: [".jpg", ".jpeg", ".png"],
-        maxFileSize: 5 * 1024 * 1024,
-      },
-    },
-  ];
+  const units = useMemo(
+    () => [
+      { value: "kg", label: "Kilogram" },
+      { value: "g", label: "Gram" },
+      { value: "lb", label: "Pound" },
+      { value: "oz", label: "Ounce" },
+      { value: "l", label: "Liter" },
+      { value: "ml", label: "Milliliter" },
+    ],
+    []
+  );
+
+  const fields = [...itemFields, ...customFields];
+
+  const { allFields, addCustomField, removeCustomField, getFieldsBySection } =
+    useFieldManager(itemFields, "inventory");
+
+  // const itemFields: FieldConfig[] = [
+  //   {
+  //     name: "type",
+  //     label: "Type",
+  //     type: "radio",
+  //     required: true,
+  //     gridWidth: "full",
+  //     options: [
+  //       { value: "GOODS", label: "Good" },
+  //       { value: "SERVICE", label: "Service" },
+  //     ],
+  //     tooltipContent: "Select if this item is a physical good or a service.",
+  //   },
+  //   {
+  //     name: "name",
+  //     label: "Name",
+  //     type: "text",
+  //     gridWidth: "full",
+  //     required: true,
+  //   },
+  //   {
+  //     name: "description",
+  //     label: "Description",
+  //     type: "text",
+  //     gridWidth: "full",
+  //     required: false,
+  //   },
+  //   {
+  //     name: "sku",
+  //     label: "SKU",
+  //     type: "text",
+  //     gridWidth: "half",
+  //     required: false,
+  //   },
+  //   {
+  //     name: "unit",
+  //     label: "Unit",
+  //     type: "select",
+  //     gridWidth: "half",
+  //     options: units,
+  //     required: true,
+  //   },
+  //   {
+  //     name: "category",
+  //     label: "Category",
+  //     type: "select",
+  //     gridWidth: "full",
+  //     options: [
+  //       { value: "medicine", label: "Medicine" },
+  //       { value: "equipment", label: "Equipment" },
+  //       { value: "supplies", label: "Supplies" },
+  //       { value: "supplement", label: "Supplement" },
+  //     ],
+  //     required: true,
+  //   },
+  //   {
+  //     name: "stock",
+  //     label: "Current Stock",
+  //     type: "number",
+  //     gridWidth: "half",
+  //     required: true,
+  //   },
+  //   {
+  //     name: "price",
+  //     label: "Price",
+  //     type: "number",
+  //     gridWidth: "half",
+  //     required: true,
+  //   },
+  //   {
+  //     name: "reorder",
+  //     label: "Reorder Point",
+  //     type: "number",
+  //     gridWidth: "half",
+  //     required: false,
+  //   },
+  //   {
+  //     name: "expiryDate",
+  //     label: "Expiry Date",
+  //     type: "date",
+  //     gridWidth: "half",
+  //     required: false,
+  //   },
+  //   {
+  //     name: "manufacturer",
+  //     label: "Manufacturer",
+  //     type: "text",
+  //     gridWidth: "full",
+  //     required: false,
+  //   },
+  //   {
+  //     name: "batchNumber",
+  //     label: "Batch Number",
+  //     type: "text",
+  //     gridWidth: "full",
+  //     required: true,
+  //   },
+  //   {
+  //     name: "storageConditions",
+  //     label: "Storage Conditions",
+  //     type: "text",
+  //     gridWidth: "full",
+  //     required: false,
+  //   },
+  //   {
+  //     name: "image",
+  //     label: "Product Image",
+  //     type: "file",
+  //     gridWidth: "full",
+  //     required: false,
+  //     validation: {
+  //       acceptedFileTypes: [".jpg", ".jpeg", ".png"],
+  //       maxFileSize: 5 * 1024 * 1024,
+  //     },
+  //   },
+  // ];
 
   const handleSubmit = async (data: Record<string, any>) => {
     console.log("clicked");
@@ -196,7 +212,7 @@ const EditItem = () => {
 
         <section>
           <DynamicFormGenerator
-            fields={itemFields}
+            fields={fields}
             context="inventory"
             onSubmit={handleSubmit}
             title="Edit Item"

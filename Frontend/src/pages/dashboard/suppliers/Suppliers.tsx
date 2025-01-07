@@ -24,8 +24,9 @@ import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { ColumnDef } from "@tanstack/react-table";
 import { InventoryItem } from "../inventory/Inventory";
+import { Supplier } from "types/types";
 
-const columns: ColumnDef<InventoryItem>[] = [
+const columns: ColumnDef<Supplier>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -169,7 +170,7 @@ const columns: ColumnDef<InventoryItem>[] = [
 ];
 
 const Suppliers = () => {
-  const { data: users, loading, error, refetch } = useFetchAllUser("inventory");
+  const { data: users, loading, error, refetch } = useFetchAllUser();
   const [viewMode, setViewMode] = useState("Table");
 
   // Filter suppliers from all users
