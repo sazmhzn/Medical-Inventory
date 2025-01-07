@@ -88,49 +88,8 @@ interface DynamicFormProps {
   additionalContent?: React.ReactNode;
   context: string;
   initialValues?: Record<string, any>; // Add this line
+  isLoading?: boolean;
 }
-
-// Custom field schema
-const customFieldSchema = z.object({
-  label: z.string().min(1, "Label is required"),
-  dataType: z.enum([
-    "text",
-    "number",
-    "email",
-    "phone",
-    "select",
-    "date",
-    "checkbox",
-  ]),
-  isRequired: z.boolean(),
-  defaultValue: z.string().optional(),
-  options: z
-    .array(
-      z.object({
-        value: z.string(),
-        label: z.string(),
-      })
-    )
-    .optional(),
-});
-
-// Alert component for form status
-const FormAlert = ({ type, message }) => {
-  return (
-    <Alert
-      variant={type === "success" ? "default" : "destructive"}
-      className="mb-4"
-    >
-      {type === "success" ? (
-        <CheckCircle2 className="h-4 w-4" />
-      ) : (
-        <AlertCircle className="h-4 w-4" />
-      )}
-      <AlertTitle>{type === "success" ? "Success" : "Error"}</AlertTitle>
-      <AlertDescription>{message}</AlertDescription>
-    </Alert>
-  );
-};
 
 // Example input component with phone formatting
 const PhoneInputField = memo(({ field, form, config }: any) => {
@@ -497,6 +456,7 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
   context,
   additionalContent,
   initialValues,
+  isLoading,
 }) => {
   const getGridClass = (width?: string) => {
     switch (width) {
@@ -510,35 +470,6 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
         return "col-span-2 md:col-span-1"; // Default to half width on medium screens
     }
   };
-  const handleAddCustomField = (field: FieldConfig) => {
-    setCustomFields((prev) => [...prev, field]);
-  };
-  // const defaultFields = fields.filter((field) =>
-  //   [
-  //     "name",
-  //     "type",
-  //     "email",
-  //     "phone.work",
-  //     "category",
-  //     "price",
-  //     "isPreferred",
-  //     "inStock",
-  //   ].includes(field.name)
-  // );
-
-  // const otherDetails = fields.filter(
-  //   (field) =>
-  //     ![
-  //       "name",
-  //       "type",
-  //       "email",
-  //       "phone.work",
-  //       "category",
-  //       "price",
-  //       "isPreferred",
-  //       "inStock",
-  //     ].includes(field.name)
-  // );
 
   const fieldConfig = [
     {
@@ -839,132 +770,3 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
 };
 
 export default DynamicFormGenerator;
-
-// Example usage with validation
-export const ItemForm = () => {
-  const itemFields: FieldConfig[] = [
-    {
-      name: "name",
-      label: "Item Name",
-      type: "text",
-      required: true,
-      validation: {
-        minLength: 3,
-        maxLength: 50,
-        message: "Item name must be between 3 and 50 characters",
-      },
-    },
-    {
-      name: "type",
-      label: "Item Type",
-      type: "select",
-      required: true,
-      options: [
-        { value: "good", label: "Physical Good" },
-        { value: "service", label: "Service" },
-      ],
-    },
-    {
-      name: "category",
-      label: "Category",
-      type: "radio",
-      required: true,
-      options: [
-        { value: "electronics", label: "Electronics" },
-        { value: "clothing", label: "Clothing" },
-        { value: "food", label: "Food & Beverages" },
-      ],
-    },
-    {
-      name: "price",
-      label: "Price",
-      type: "number",
-      required: true,
-      validation: {
-        min: 0,
-        message: "Price must be greater than 0",
-      },
-    },
-    {
-      name: "inStock",
-      label: "In Stock",
-      type: "checkbox",
-    },
-  ];
-
-  const handleSubmit = (data: Record<string, any>) => {
-    console.log("Form submitted:", data);
-    alert(JSON.stringify(data, null, 2));
-  };
-
-  return (
-    <DynamicFormGenerator
-      fields={itemFields}
-      onSubmit={handleSubmit}
-      title="Add New Item"
-    />
-  );
-};
-export const SupplierForm = () => {
-  const itemFields: FieldConfig[] = [
-    {
-      name: "Customer Type",
-      label: "Customer Type",
-      type: "radio",
-      required: true,
-      options: [
-        { value: "business", label: "Business" },
-        { value: "individual", label: "Individual" },
-      ],
-    },
-    {
-      name: "type",
-      label: "Item Type",
-      type: "select",
-      required: true,
-      options: [
-        { value: "good", label: "Physical Good" },
-        { value: "service", label: "Service" },
-      ],
-    },
-    {
-      name: "category",
-      label: "Category",
-      type: "radio",
-      required: true,
-      options: [
-        { value: "electronics", label: "Electronics" },
-        { value: "clothing", label: "Clothing" },
-        { value: "food", label: "Food & Beverages" },
-      ],
-    },
-    {
-      name: "price",
-      label: "Price",
-      type: "number",
-      required: true,
-      validation: {
-        min: 0,
-        message: "Price must be greater than 0",
-      },
-    },
-    {
-      name: "inStock",
-      label: "In Stock",
-      type: "checkbox",
-    },
-  ];
-
-  const handleSubmit = (data: Record<string, any>) => {
-    console.log("Form submitted:", data);
-    alert(JSON.stringify(data, null, 2));
-  };
-
-  return (
-    <DynamicFormGenerator
-      fields={itemFields}
-      onSubmit={handleSubmit}
-      title="Add New Item"
-    />
-  );
-};

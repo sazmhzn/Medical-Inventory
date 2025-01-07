@@ -25,6 +25,7 @@ import { Checkbox } from "@radix-ui/react-checkbox";
 import { ColumnDef } from "@tanstack/react-table";
 import { InventoryItem } from "../inventory/Inventory";
 import { Supplier } from "types/types";
+import { useSuppliers } from "@/services/SupplierAPI";
 
 const columns: ColumnDef<Supplier>[] = [
   {
@@ -170,15 +171,10 @@ const columns: ColumnDef<Supplier>[] = [
 ];
 
 const Suppliers = () => {
-  const { data: users, loading, error, refetch } = useFetchAllUser();
-  const [viewMode, setViewMode] = useState("Table");
+  // const { data: users, loading, error, refetch } = useFetchAllUser();
+  const { data: suppliers, isLoading, refetch } = useSuppliers(); // Using React Query hook
 
-  // Filter suppliers from all users
-  const suppliers =
-    users?.filter(
-      (user) =>
-        user.roles.includes("SUPPLIER") || user.roles.includes("ROLE_SUPPLIER")
-    ) || [];
+  const [viewMode, setViewMode] = useState("Table");
 
   // const selectedSupplier = suppliers.find((s) => s.id.toString() === value);
 
@@ -191,7 +187,7 @@ const Suppliers = () => {
   };
 
   const handleRefresh = () => {
-    console.log("Refresh List clicked");
+    refetch();
   };
 
   const handleDeleteItems = async (selectedIds: string[]) => {
@@ -237,7 +233,7 @@ const Suppliers = () => {
         />
         <section className="p-6 ">
           <section className="p-6 ">
-            {loading ? (
+            {isLoading ? (
               <p>Loading...</p>
             ) : suppliers && suppliers.length > 0 ? (
               <GenericTable

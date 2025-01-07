@@ -128,7 +128,12 @@ function App() {
                 />
                 <Route
                   path="suppliers/add"
-                  element={<AddCustomField entityType="suppliers" />}
+                  element={
+                    <AddCustomField
+                      formName="suppliersCustomField"
+                      entityType="suppliers"
+                    />
+                  }
                 />
                 <Route
                   path="orders"
@@ -136,7 +141,12 @@ function App() {
                 />
                 <Route
                   path="orders/add"
-                  element={<AddCustomField entityType="order" />}
+                  element={
+                    <AddCustomField
+                      formName="ordersCustomField"
+                      entityType="orders"
+                    />
+                  }
                 />
               </Route>
               <Route path="preferences/suppliers" element={<Profile />} />

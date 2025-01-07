@@ -1,10 +1,14 @@
 import { z } from "zod";
 // import DynamicFormGenerator from "../dashboard/components/DynamicFormGenerator";
 import DynamicFormGenerator, { FieldConfig } from "./__testDynamicForm";
+import { supplierSchema } from "types/types";
+import { useCallback } from "react";
+import { useCreateSupplier } from "@/services/SupplierAPI";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PageHeader } from "../dashboard/components/PageHeader";
+import HeaderTitle from "@/components/commons/header-title";
 
 const SupplierFormWithTabs = () => {
-  // const [customFields, setCustomFields] = useState([]);
-
   // Default fields configuration
   const supplierFields: FieldConfig[] = [
     {
@@ -82,7 +86,7 @@ const SupplierFormWithTabs = () => {
       label: "Company Document",
       type: "file",
       required: false,
-      
+
       validation: {
         acceptedFileTypes: [".pdf", ".doc", ".docx"],
         maxFileSize: 5 * 1024 * 1024, // 5MB
@@ -91,19 +95,60 @@ const SupplierFormWithTabs = () => {
     },
   ];
 
-  const handleSupplierSubmit = (data: any) => {
-    console.log("Supplier Submitted:", data);
-    // Implement your submit logic
-  };
+  const { mutate: createSupplier, isLoading, error } = useCreateSupplier();
+
+  const handleSubmit = useCallback(
+    async (data: Record<string, any>) => {
+      try {
+        // Validate data
+        const validatedData = supplierSchema.parse(data);
+
+        // Create FormData for file upload
+        const formData = new FormData();
+        Object.entries(validatedData).forEach(([key, value]) => {
+          if (key === "document" && value instanceof File) {
+            formData.append("document", value);
+          } else {
+            formData.append(key, String(value));
+          }
+        });
+
+        // Submit data
+        createSupplier(formData);
+      } catch (err) {
+        console.error("Validation error:", err);
+      }
+    },
+    [createSupplier]
+  );
 
   return (
-    <div className="">
-      {/* Default Fields Section */}
-      <DynamicFormGenerator
-        context="supplier"
-        fields={supplierFields}
-        onSubmit={handleSupplierSubmit}
-      />
+    <div className="w-full">
+      <HeaderTitle title="Supplier" />
+
+      <div className="bg-background/95 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <section className="border-b pb-0">
+          <PageHeader title="New Supplier" backButtonLink="/admin/suppliers" />
+        </section>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {error instanceof Error
+                ? error.message
+                : "Failed to add supplier"}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <section>
+          <DynamicFormGenerator
+            context="supplier"
+            fields={supplierFields}
+            onSubmit={handleSubmit}
+          />
+        </section>
+      </div>
     </div>
   );
 };

@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export interface Inventory {
   id: number;
   name: string;
