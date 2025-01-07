@@ -108,7 +108,7 @@ const AddSuppliers = () => {
         <section>
           <DynamicFormGenerator
             context="supplier"
-            fields={supplierFields}
+            fields={allFields()}
             onSubmit={handleSubmit}
             isLoading={isLoading}
           />

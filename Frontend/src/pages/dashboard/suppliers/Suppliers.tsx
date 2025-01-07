@@ -15,6 +15,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Supplier } from "types/types";
 import { useDeleteSupplier, useSuppliers } from "@/services/SupplierAPI";
 import { useToast } from "@/hooks/use-toast";
+import { handleExport } from "@/utils/ExportExcel";
 const columns: ColumnDef<Supplier>[] = [
   {
     id: "select",
@@ -100,55 +101,17 @@ const Suppliers = () => {
     console.log("Import Suppliers clicked");
   };
 
-  const handleExport = () => {
-    if (!suppliers || suppliers.length === 0) {
-      toast({
-        title: "Export Failed",
-        description: "No suppliers data available to export",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const headers = [
-      "ID",
-      "Username",
-      "Name",
-      "Email",
-      "Contact",
-      "Address",
-      "Created Date",
-      "Last Updated",
-      "Custom Value",
-    ];
-
-    const csvData = suppliers.map((supplier) => [
+  const handleExportSuppliers = () => {
+    const headers = ["ID", "Name", "Email", "Contact", "Address"];
+    const dataMapper = (supplier) => [
       supplier.id,
-      supplier.username,
       supplier.name,
       supplier.emailAddress,
       supplier.contact,
       supplier.address,
-      new Date(supplier.createdDate).toLocaleDateString(),
-      new Date(supplier.lastUpdatedDate).toLocaleDateString(),
-      supplier.customValue || "N/A",
-    ]);
+    ];
 
-    const csvContent = [
-      headers.join(","),
-      ...csvData.map((row) => row.join(",")),
-    ].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `suppliers_${new Date().toISOString().split("T")[0]}.csv`;
-    link.click();
-
-    toast({
-      title: "Export Successful",
-      description: "Suppliers list has been exported to CSV",
-    });
+    handleExport(suppliers, "suppliers", headers, dataMapper);
   };
 
   const handleRefresh = () => {
@@ -204,7 +167,7 @@ const Suppliers = () => {
             {
               label: "Export Suppliers",
               icon: <DownloadCloudIcon className="h-4 w-4" />,
-              onClick: handleExport,
+              onClick: handleExportSuppliers,
             },
             {
               label: "Preferences",
