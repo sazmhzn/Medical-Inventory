@@ -16,13 +16,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useFetchInventory } from "@/services/InventoryAPI";
 import { InventoryItem } from "../inventory/Inventory";
-import {
-  bulkDeleteOrders,
-  deleteOrder,
-  useFetchOrder,
-} from "@/services/OrderAPI";
+
 import { ColumnDef } from "@tanstack/react-table";
-import { toast } from "@/hooks/use-toast";
+import { useDeleteOrders, useOrders } from "@/services/OrderAPI";
+import { useToast } from "@/hooks/use-toast";
 
 const columns: ColumnDef[] = [
   {
@@ -108,27 +105,23 @@ const columns: ColumnDef[] = [
 ];
 
 const Order = () => {
-  const { data: orders, loading, error, refetch } = useFetchOrder();
+  const { toast } = useToast();
+  const { data: orders, isLoading, refetch } = useOrders();
+  const deleteOrdersMutation = useDeleteOrders();
   const [viewMode, setViewMode] = useState("Table");
 
   const handleDeleteOrder = async (selectedIds: string[]) => {
     try {
-      const result = await bulkDeleteOrders(selectedIds);
-
+      await deleteOrdersMutation.mutateAsync(selectedIds);
       toast({
-        title: "Deleted",
-        description: `${selectedIds.join(", ")} have been deleted`,
-        variant: "destructive",
+        title: "Success",
+        description: `${selectedIds.length} orders deleted`,
       });
-
       refetch(); // Refresh the data
-      console.log("Deleted items: ", result);
-    } catch (error) {
-      console.error("Failed to delete items:", error);
-
+    } catch {
       toast({
         title: "Error",
-        description: "Failed to delete selected items",
+        description: "Failed to delete orders",
         variant: "destructive",
       });
     }
@@ -147,18 +140,13 @@ const Order = () => {
           <header className="flex justify-between px-6">
             <h1 className="text-2xl font-medium">All Sales Orders</h1>
             <div className="inline-flex gap-4 items-center">
-              <div>
-                <Button variant="link">
-                  <Info />
-                  View Order Stats
-                </Button>
-              </div>
+              <Button variant="link">
+                <Info className="mr-2" />
+                View Order Stats
+              </Button>
               <Button asChild>
-                <Link
-                  to="/admin/orders/add-order"
-                  className="flex items-center gap-1"
-                >
-                  <PlusIcon /> New
+                <Link to="/admin/orders/add-order">
+                  <PlusIcon className="mr-2" /> New
                 </Link>
               </Button>
             </div>
@@ -166,9 +154,9 @@ const Order = () => {
         </section>
 
         <section className="p-6 ">
-          {loading ? (
+          {isLoading ? (
             <p>Loading...</p>
-          ) : orders && orders.length > 0 ? (
+          ) : orders?.length ? (
             <GenericTable
               viewMode={viewMode}
               data={orders}

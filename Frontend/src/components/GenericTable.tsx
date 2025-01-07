@@ -70,6 +70,10 @@ export function GenericTable<T>({
       image: false, // Hidden by default
       status: false, // Hidden by default
       type: false, // Hidden by default
+      customValue: false,
+      username: false,
+      lastUpdatedDate: false,
+      createdDate: false,
     });
   const [rowSelection, setRowSelection] = React.useState({});
   // const [viewMode, setViewMode] = React.useState<"table" | "card">("Table");

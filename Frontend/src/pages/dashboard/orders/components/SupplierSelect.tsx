@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/command";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { useFetchAllUser } from "@/services/UserAPI";
+import { useSuppliers } from "@/services/SupplierAPI";
 
 interface SupplierSelectProps {
   value: string;
@@ -22,17 +23,19 @@ interface SupplierSelectProps {
 }
 
 export const SupplierSelect = ({ value, onChange }: SupplierSelectProps) => {
-  const { data: users, loading } = useFetchAllUser("user");
+  // const { data: users, loading } = useFetchAllUser("user");
+  const { data: suppliers, isLoading: loading, refetch } = useSuppliers(); // Using React Query hook
+
   const [open, setOpen] = useState(false);
 
   // Filter suppliers from all users
-  const suppliers =
-    users?.filter(
-      (user) =>
-        user.roles.includes("SUPPLIER") || user.roles.includes("ROLE_SUPPLIER")
-    ) || [];
+  // const suppliers =
+  //   users?.filter(
+  //     (user) =>
+  //       user.roles.includes("SUPPLIER") || user.roles.includes("ROLE_SUPPLIER")
+  //   ) || [];
 
-  const selectedSupplier = suppliers.find((s) => s.id.toString() === value);
+  const selectedSupplier = suppliers?.find((s) => s.id.toString() === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -54,7 +57,7 @@ export const SupplierSelect = ({ value, onChange }: SupplierSelectProps) => {
               {loading ? "Loading..." : "No suppliers found."}
             </CommandEmpty>
             <CommandGroup>
-              {suppliers.map((supplier) => (
+              {suppliers?.map((supplier) => (
                 <CommandItem
                   key={supplier.id}
                   value={supplier.name}

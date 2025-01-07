@@ -362,6 +362,10 @@ const Inventory = () => {
     }
   }, [inventory]);
 
+  const handleRefresh = () => {
+    refetch();
+  };
+
   const handleImportSuccess = (importedData: InventoryItem[]) => {
     setLocalInventory((prev) => [...prev, ...importedData]);
     refetch();
@@ -430,7 +434,7 @@ const Inventory = () => {
               {
                 label: "Refresh List",
                 icon: <RefreshCwIcon className="h-4 w-4" />,
-                // onClick: handleRefresh,
+                onClick: handleRefresh,
               },
             ]}
           />

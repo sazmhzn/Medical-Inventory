@@ -4,27 +4,31 @@ import { OrderItemsTable } from "./components/OrderItemsTable";
 import { calculateTotal } from "@/utils/orderCalculations";
 import { useState } from "react";
 import { OrderItem } from "types/types";
-import DynamicFormGenerator, {
-  FieldConfig,
-} from "@/pages/test/__testDynamicForm";
-import { postOrder } from "@/services/OrderAPI";
-import { toast, useToast } from "@/hooks/use-toast";
+import DynamicFormGenerator from "@/pages/test/__testDynamicForm";
+import { useCreateOrder } from "@/services/OrderAPI";
+import { useToast } from "@/hooks/use-toast";
 import { orderFields } from "@/config/OrderFields";
 
+interface OrderFormData {
+  salesOrderDate: string;
+  shipmentDate: string;
+}
+
+const initialOrderItem: OrderItem = {
+  id: 1,
+  inventoryId: 0,
+  name: "",
+  qty: 1,
+  rate: 0,
+  tax: 0,
+  amount: 0,
+};
 const AddSalesOrders = () => {
   const { toast } = useToast();
+  const createOrder = useCreateOrder();
+
   const [selectedSupplier, setSelectedSupplier] = useState<number>(0);
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([
-    {
-      id: 1,
-      inventoryId: 0,
-      name: "",
-      qty: 1,
-      rate: 0,
-      tax: 0,
-      amount: 0,
-    },
-  ]);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([initialOrderItem]);
 
   const handleSubmit = async (formData: any) => {
     const orderData = {
@@ -40,32 +44,21 @@ const AddSalesOrders = () => {
       })),
     };
     try {
+      await createOrder.mutateAsync(orderData);
       toast({
         title: "Success!",
-        description: `This is a success toast of`,
+        description: "Order created successfully",
         variant: "success",
       });
-      console.log("Order Items JSON:", JSON.stringify(orderData, null, 2));
-
-      const result = await postOrder(orderData);
-      console.log("Item added successfully:", orderData);
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create order",
+        variant: "destructive",
+      });
+      console.error("Error creating order:", error);
     }
-
-    // Handle submission logic here
-    console.log(orderData);
   };
-
-  const renderAdditionalContent = () => (
-    <>
-      <SupplierSelect
-        value={selectedSupplier.toString()}
-        onChange={(value) => setSelectedSupplier(Number(value))}
-      />
-      <OrderItemsTable items={orderItems} onItemsChange={setOrderItems} />
-    </>
-  );
 
   return (
     <AddFormContainer title="New Sales Order" backUrl="/orders">
@@ -75,7 +68,15 @@ const AddSalesOrders = () => {
         onSubmit={handleSubmit}
         title="Create Order"
         context="order"
-        additionalContent={renderAdditionalContent()}
+        additionalContent={
+          <>
+            <SupplierSelect
+              value={selectedSupplier.toString()}
+              onChange={(value) => setSelectedSupplier(Number(value))}
+            />
+            <OrderItemsTable items={orderItems} onItemsChange={setOrderItems} />
+          </>
+        }
       />
     </AddFormContainer>
   );

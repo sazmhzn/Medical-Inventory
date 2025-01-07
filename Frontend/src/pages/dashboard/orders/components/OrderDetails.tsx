@@ -1,5 +1,14 @@
 import { useParams, useNavigate } from "react-router-dom";
 import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { useOrder, useOrders } from "@/services/OrderAPI";
+import {
   Card,
   CardContent,
   CardHeader,
@@ -8,57 +17,80 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 import { BackHeader } from "../../components/PageHeader";
-import { useFetchOrder, useFetchOrderById } from "@/services/OrderAPI";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+interface OrderItem {
+  itemId: number;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  supplierId: number;
+  orderDate: string;
+  status: string;
+  totalAmount: number;
+  createdDate: string;
+  lastUpdatedDate: string;
+  items: OrderItem[];
+}
 
 export function OrderDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: orderDetails, loading, error } = useFetchOrderById(id);
-  const {
-    data: ordersList,
-    loading: listLoading,
-    error: listError,
-  } = useFetchOrder();
+  const { data: orderDetails, isLoading: detailsLoading } = useOrder(id || "");
+  const { data: ordersList, isLoading: listLoading } = useOrders();
 
-  const handleOrderClick = (orderId: string) => {
-    navigate(`/admin/orders/details/${orderId}`);
+  const getStatusColor = (status: string) => {
+    const colors = {
+      PENDING: "bg-yellow-100 text-yellow-800",
+      COMPLETED: "bg-green-100 text-green-800",
+      CANCELLED: "bg-red-100 text-red-800",
+    };
+    return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800";
   };
 
+  const chartData = ordersList?.map((order) => ({
+    date: new Date(order.orderDate).toLocaleDateString(),
+    amount: order.totalAmount,
+  }));
+
   return (
-    <div className="grid md:grid-cols-[260px_1fr] h-full">
+    <div className="grid lg:grid-cols-[300px_1fr] h-full">
       {/* Sidebar */}
-      <aside className="bg-background border-r md:inline hidden">
+      <aside className="bg-background border-r lg:block hidden">
         <div className="p-4 border-b">
-          <h2 className="font-semibold">Orders</h2>
+          <h2 className="font-semibold">Orders History</h2>
         </div>
         <ScrollArea className="h-[calc(100vh-8rem)]">
           {listLoading ? (
             <div className="p-4 space-y-3">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          ) : listError ? (
-            <div className="p-4">
-              <p className="text-red-500">Error loading orders</p>
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
             </div>
           ) : (
             <div className="p-2">
               {ordersList?.map((order) => (
                 <div
                   key={order.id}
-                  onClick={() => handleOrderClick(order.id)}
+                  onClick={() => navigate(`/admin/orders/details/${order.id}`)}
                   className={cn(
-                    "p-3 rounded-md cursor-pointer mb-1 hover:bg-muted/50 transition-colors",
+                    "p-3 rounded-md cursor-pointer mb-2 hover:bg-muted/50 transition-colors",
                     order.id === id && "bg-muted"
                   )}
                 >
-                  <div className="font-medium mb-1">Order #{order.id}</div>
-                  <div className="text-sm text-muted-foreground flex justify-between">
-                    <span>Status: {order.status}</span>
-                    <span>${order.totalAmount}</span>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium">Order #{order.id}</span>
+                    <Badge className={getStatusColor(order.status)}>
+                      {order.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    ${order.totalAmount}
                   </div>
                 </div>
               ))}
@@ -67,115 +99,61 @@ export function OrderDetails() {
         </ScrollArea>
       </aside>
 
-      {/* Details Section */}
-      <main className="p-6 bg-background">
-        {loading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-4 w-32" />
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-48" />
-                <Skeleton className="h-4 w-full" />
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    {[...Array(7)].map((_, i) => (
-                      <Skeleton key={i} className="h-4 w-full" />
-                    ))}
-                  </div>
-                  <div className="space-y-3">
-                    {[...Array(7)].map((_, i) => (
-                      <Skeleton key={i} className="h-4 w-full" />
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        ) : error ? (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-800">Error loading order details</p>
-          </div>
+      {/* Main Content */}
+      <main className="p-4 lg:p-6 bg-background overflow-y-auto">
+        <BackHeader
+          title="Order Details"
+          subtitle="View order information and analytics"
+          backTo="/admin/orders"
+          className="mb-6"
+        />
+
+        {detailsLoading ? (
+          <LoadingSkeleton />
         ) : orderDetails ? (
-          <>
-            <BackHeader
-              title="Order Details"
-              subtitle="View and edit order information"
-              backTo="/admin/orders"
-              className="mb-6"
-            />
+          <div className="space-y-6">
+            {/* Order Summary Card */}
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                   <div>
-                    <CardTitle className="text-2xl">
+                    <CardTitle className="text-xl lg:text-2xl">
                       Order #{orderDetails.id}
                     </CardTitle>
                     <CardDescription>
                       Supplier ID: {orderDetails.supplierId}
                     </CardDescription>
                   </div>
+                  <Badge className={getStatusColor(orderDetails.status)}>
+                    {orderDetails.status}
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-x-12 gap-y-4">
-                  {/* Left Column */}
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Order Date:</span>
-                      <span>{orderDetails.orderDate}</span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Status:</span>
-                      <span>{orderDetails.status}</span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Total Amount:</span>
-                      <span>${orderDetails.totalAmount}</span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Created:</span>
-                      <span>
-                        {new Date(
-                          orderDetails.createdDate
-                        ).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Last Updated:</span>
-                      <span>
-                        {new Date(
-                          orderDetails.lastUpdatedDate
-                        ).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  {/* Right Column */}
-                  <div className="space-y-3">
-                    <div className="font-medium mb-3">Items</div>
-                    {orderDetails.items.map((item, index) => (
-                      <div key={index} className="p-3 rounded-md border mb-2">
-                        <div className="grid grid-cols-[120px_1fr] gap-2">
-                          <span className="font-medium">Item ID:</span>
-                          <span>{item.itemId}</span>
-                        </div>
-                        <div className="grid grid-cols-[120px_1fr] gap-2">
-                          <span className="font-medium">Quantity:</span>
-                          <span>{item.quantity}</span>
-                        </div>
-                        <div className="grid grid-cols-[120px_1fr] gap-2">
-                          <span className="font-medium">Price:</span>
-                          <span>${item.price}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <OrderDetail order={orderDetails} />
+                  <OrderItems items={orderDetails.items} />
                 </div>
               </CardContent>
             </Card>
-          </>
+
+            {/* Analytics Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Trends</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="amount" stroke="#2563eb" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
             <p className="text-yellow-800">No order details found.</p>
@@ -185,3 +163,73 @@ export function OrderDetails() {
     </div>
   );
 }
+
+export const OrderDetail = ({ order }: { order: Order }) => (
+  <div className="space-y-3">
+    <DetailRow
+      label="Order Date"
+      value={new Date(order.orderDate).toLocaleDateString()}
+    />
+    <DetailRow label="Total Amount" value={`$${order.totalAmount}`} />
+    <DetailRow
+      label="Created"
+      value={new Date(order.createdDate).toLocaleDateString()}
+    />
+    <DetailRow
+      label="Last Updated"
+      value={new Date(order.lastUpdatedDate).toLocaleDateString()}
+    />
+  </div>
+);
+
+const OrderItems = ({ items }: { items: OrderItem[] }) => (
+  <div className="space-y-3">
+    <h3 className="font-medium">Order Items</h3>
+    <div className="space-y-2">
+      {items.map((item, index) => (
+        <div key={index} className="p-3 rounded-md border">
+          <DetailRow label="Item ID" value={item.itemId} />
+          <DetailRow label="Quantity" value={item.quantity} />
+          <DetailRow label="Price" value={`$${item.price}`} />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const DetailRow = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) => (
+  <div className="grid grid-cols-[120px_1fr] gap-2">
+    <span className="font-medium">{label}:</span>
+    <span>{value}</span>
+  </div>
+);
+
+const LoadingSkeleton = () => (
+  <div className="space-y-4">
+    <Skeleton className="h-8 w-64" />
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-6 w-48" />
+      </CardHeader>
+      <CardContent>
+        <div className="grid md:grid-cols-2 gap-6">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="space-y-3">
+              {[...Array(4)].map((_, j) => (
+                <Skeleton key={j} className="h-4 w-full" />
+              ))}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
+
+export default OrderDetails;

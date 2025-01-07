@@ -13,17 +13,14 @@ import { useState } from "react";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { ColumnDef } from "@tanstack/react-table";
 import { Supplier } from "types/types";
-import { useSuppliers } from "@/services/SupplierAPI";
+import { useDeleteSupplier, useSuppliers } from "@/services/SupplierAPI";
 import { useToast } from "@/hooks/use-toast";
 const columns: ColumnDef<Supplier>[] = [
   {
     id: "select",
     header: ({ table }) => (
       <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
+        checked={table.getIsAllPageRowsSelected()}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
       />
@@ -97,9 +94,7 @@ const Suppliers = () => {
   const navigate = useNavigate();
   const { data: suppliers, isLoading, refetch } = useSuppliers(); // Using React Query hook
 
-  const [viewMode, setViewMode] = useState("Table");
-
-  // const selectedSupplier = suppliers.find((s) => s.id.toString() === value);
+  const [viewMode, setViewMode] = useState<"Table" | "Card">("Table");
 
   const handleImport = () => {
     console.log("Import Suppliers clicked");
@@ -164,16 +159,19 @@ const Suppliers = () => {
     setViewMode(viewMode === "Table" ? "Card" : "Table");
   };
 
+  const deleteSupplierMutation = useDeleteSupplier();
+
   const handleDeleteItems = async (selectedIds: string[]) => {
     try {
-      // const result = await delete(selectedIds);
-      refetch();
+      await Promise.all(
+        selectedIds.map((id) => deleteSupplierMutation.mutateAsync(id))
+      );
+
       toast({
         title: "Items Deleted",
         description: `Successfully deleted ${selectedIds.length} suppliers`,
         variant: "success",
       });
-      console.log("Deleting the item: ", selectedIds);
     } catch (error) {
       toast({
         title: "Delete Failed",
