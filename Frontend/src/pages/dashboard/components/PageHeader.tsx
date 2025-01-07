@@ -167,7 +167,12 @@ export const BackHeader: React.FC<BackHeaderProps> = ({
   className,
 }) => {
   return (
-    <div className={cn("pb-4 space-y-2", className)}>
+    <div
+      className={cn(
+        "pb-4 space-y-2 flex items-center justify-between",
+        className
+      )}
+    >
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {subtitle && (

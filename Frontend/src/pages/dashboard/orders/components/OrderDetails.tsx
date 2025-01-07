@@ -105,7 +105,7 @@ export function OrderDetails() {
           title="Order Details"
           subtitle="View order information and analytics"
           backTo="/admin/orders"
-          className="mb-6"
+          className="mb-0"
         />
 
         {detailsLoading ? (

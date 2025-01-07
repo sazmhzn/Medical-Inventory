@@ -53,6 +53,7 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
+import { handleExport } from "@/utils/ExportExcel";
 
 export type InventoryItem = {
   id: string;
@@ -362,6 +363,51 @@ const Inventory = () => {
     }
   }, [inventory]);
 
+  // Inventory-specific method
+  const handleExportInventory = () => {
+    const headers = [
+      "ID",
+      "Name",
+      "Description",
+      "SKU",
+      "Unit",
+      "Type",
+      "Stock",
+      "Price",
+      "Reorder Level",
+      "Expiry Date",
+      "Manufacturer",
+      "Batch Number",
+      "Category",
+      "Storage Conditions",
+      "Created Date",
+      "Last Updated Date",
+      "Custom Value",
+    ];
+
+    const dataMapper = (item) => [
+      item.id,
+      item.name,
+      item.description,
+      item.sku,
+      item.unit,
+      item.type,
+      item.stock,
+      item.price,
+      item.reorder,
+      item.expiryDate,
+      item.manufacturer,
+      item.batchNumber,
+      item.category,
+      item.storageConditions,
+      new Date(item.createdDate).toLocaleDateString(),
+      new Date(item.lastUpdatedDate).toLocaleDateString(),
+      item.customValue || "N/A",
+    ];
+
+    handleExport(inventory, "inventory", headers, dataMapper);
+  };
+
   const handleRefresh = () => {
     refetch();
   };
@@ -424,7 +470,7 @@ const Inventory = () => {
               {
                 label: "Export Suppliers",
                 icon: <DownloadCloudIcon className="h-4 w-4" />,
-                // onClick: handleExport,
+                onClick: handleExportInventory,
               },
               {
                 label: "Preferences",
