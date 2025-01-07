@@ -2,31 +2,19 @@ import HeaderTitle from "@/components/commons/header-title";
 import { Button } from "@/components/ui/button";
 import {
   DownloadCloudIcon,
-  EllipsisVertical,
   RefreshCwIcon,
   SettingsIcon,
   UploadCloudIcon,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { PageHeader } from "../components/PageHeader";
 import { GenericTable } from "@/components/GenericTable";
-import { useEffect, useState } from "react";
-import { useFetchAllUser } from "@/services/UserAPI";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { useState } from "react";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { ColumnDef } from "@tanstack/react-table";
-import { InventoryItem } from "../inventory/Inventory";
 import { Supplier } from "types/types";
 import { useSuppliers } from "@/services/SupplierAPI";
-
+import { useToast } from "@/hooks/use-toast";
 const columns: ColumnDef<Supplier>[] = [
   {
     id: "select",
@@ -51,127 +39,62 @@ const columns: ColumnDef<Supplier>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
-    ),
+    accessorKey: "id",
+    header: "ID",
+    cell: ({ row }) => <div>{row.getValue("id")}</div>,
+  },
+  {
+    accessorKey: "username",
+    header: "Username",
+    cell: ({ row }) => <div>{row.getValue("username")}</div>,
   },
   {
     accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="justify-between p-0 "
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
+    header: "Name",
+    cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
-  {
-    accessorKey: "image",
-    header: "Img",
-  },
-  {
-    accessorKey: "stock",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="justify-between p-0 "
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Stock
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("stock")}</div>,
-  },
-  {
-    accessorKey: "price",
-    header: "Price",
-  },
-  {
-    accessorKey: "type",
-    header: "Type",
-  },
-  {
-    accessorKey: "reorder",
-    header: "Reorder",
-  },
-  {
-    accessorKey: "unit",
-    header: "Unit",
-  },
-  {
-    accessorKey: "expiryDate",
-    header: "Expiry Date",
-  },
-  {
-    accessorKey: "manufacturer",
-    header: "Manufacturer",
-  },
-  {
-    accessorKey: "batchNumber",
-    header: "Batch No.",
-  },
-  {
-    accessorKey: "category",
-    header: "Category",
-  },
-  {
-    accessorKey: "storageConditions",
-    header: "Storage Conditions",
-  },
-  {
-    accessorKey: "description",
-    header: "Desc.",
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const payment = row.original;
 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <DotsHorizontalIcon className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy Stock ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <Link
-              to={`/admin/inventory/item/${payment.id}`}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-            >
-              <EllipsisVertical className="h-4 w-4 mr-2" />
-              Edit
-            </Link>
-            <DropdownMenuItem>Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+  {
+    accessorKey: "emailAddress",
+    header: "Email",
+    cell: ({ row }) => <div>{row.getValue("emailAddress")}</div>,
+  },
+  {
+    accessorKey: "contact",
+    header: "Contact",
+    cell: ({ row }) => <div>{row.getValue("contact")}</div>,
+  },
+  {
+    accessorKey: "address",
+    header: "Address",
+    cell: ({ row }) => <div>{row.getValue("address")}</div>,
+  },
+  {
+    accessorKey: "createdDate",
+    header: "Created Date",
+    cell: ({ row }) => (
+      <div>{new Date(row.getValue("createdDate")).toLocaleDateString()}</div>
+    ),
+  },
+  {
+    accessorKey: "lastUpdatedDate",
+    header: "Last Updated",
+    cell: ({ row }) => (
+      <div>
+        {new Date(row.getValue("lastUpdatedDate")).toLocaleDateString()}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "customValue",
+    header: "Custom Value",
+    cell: ({ row }) => <div>{row.getValue("customValue") || "N/A"}</div>,
   },
 ];
 
 const Suppliers = () => {
-  // const { data: users, loading, error, refetch } = useFetchAllUser();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const { data: suppliers, isLoading, refetch } = useSuppliers(); // Using React Query hook
 
   const [viewMode, setViewMode] = useState("Table");
@@ -183,21 +106,86 @@ const Suppliers = () => {
   };
 
   const handleExport = () => {
-    console.log("Export Suppliers clicked");
+    if (!suppliers || suppliers.length === 0) {
+      toast({
+        title: "Export Failed",
+        description: "No suppliers data available to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const headers = [
+      "ID",
+      "Username",
+      "Name",
+      "Email",
+      "Contact",
+      "Address",
+      "Created Date",
+      "Last Updated",
+      "Custom Value",
+    ];
+
+    const csvData = suppliers.map((supplier) => [
+      supplier.id,
+      supplier.username,
+      supplier.name,
+      supplier.emailAddress,
+      supplier.contact,
+      supplier.address,
+      new Date(supplier.createdDate).toLocaleDateString(),
+      new Date(supplier.lastUpdatedDate).toLocaleDateString(),
+      supplier.customValue || "N/A",
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...csvData.map((row) => row.join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `suppliers_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+
+    toast({
+      title: "Export Successful",
+      description: "Suppliers list has been exported to CSV",
+    });
   };
 
   const handleRefresh = () => {
     refetch();
   };
 
+  const handleViewMode = () => {
+    setViewMode(viewMode === "Table" ? "Card" : "Table");
+  };
+
   const handleDeleteItems = async (selectedIds: string[]) => {
     try {
       // const result = await delete(selectedIds);
       refetch();
+      toast({
+        title: "Items Deleted",
+        description: `Successfully deleted ${selectedIds.length} suppliers`,
+        variant: "success",
+      });
       console.log("Deleting the item: ", selectedIds);
     } catch (error) {
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete selected suppliers",
+        variant: "destructive",
+      });
       console.error("Failed to delete items:", error);
     }
+  };
+
+  const handleAddSupplier = () => {
+    navigate("/admin/suppliers");
   };
 
   return (
@@ -206,13 +194,14 @@ const Suppliers = () => {
 
       <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <PageHeader
-          title="All Suppliers"
+          handleViewMode={handleViewMode}
+          title="All Inventory"
           newButtonLink="/admin/suppliers/add-suppliers"
           actions={[
             {
               label: "Import Suppliers",
               icon: <UploadCloudIcon className="h-4 w-4" />,
-              onClick: handleImport,
+              // onClick: handleImport,
             },
             {
               label: "Export Suppliers",
@@ -222,7 +211,7 @@ const Suppliers = () => {
             {
               label: "Preferences",
               icon: <SettingsIcon className="h-4 w-4" />,
-              link: "/admin/suppliers/preference",
+              link: "/admin/settings/preferences/inventory",
             },
             {
               label: "Refresh List",
@@ -232,41 +221,39 @@ const Suppliers = () => {
           ]}
         />
         <section className="p-6 ">
-          <section className="p-6 ">
-            {isLoading ? (
-              <p>Loading...</p>
-            ) : suppliers && suppliers.length > 0 ? (
-              <GenericTable
-                viewMode={viewMode}
-                data={suppliers}
-                columns={columns}
-                onDeleteSelected={handleDeleteItems}
-                context="suppliers"
-                detailsPath="profile"
-              />
-            ) : (
-              <div className="flex flex-col gap-6 items-center justify-center  min-h-[50vh]">
-                <div className="text-center">
-                  <h2 className="text-3xl font font-medium">
-                    Business is no fun without people.
-                  </h2>
-                  <p className="text-neutral-400">
-                    Create and manage your contacts, all in one place.
-                  </p>
-                </div>
-
-                <Button className="uppercase" asChild>
-                  <Link to={"/admin/suppliers/add-suppliers"}>
-                    Create New Vendor
-                  </Link>
-                </Button>
-
-                <Link to="/admin/suppliers/add-supplier">
-                  Click here to import vendors from file
-                </Link>
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : suppliers && suppliers.length > 0 ? (
+            <GenericTable
+              viewMode={viewMode}
+              data={suppliers}
+              columns={columns}
+              onDeleteSelected={handleDeleteItems}
+              context="suppliers"
+              detailsPath="profile"
+            />
+          ) : (
+            <div className="flex flex-col gap-6 items-center justify-center  min-h-[50vh]">
+              <div className="text-center">
+                <h2 className="text-3xl font font-medium">
+                  Business is no fun without people.
+                </h2>
+                <p className="text-neutral-400">
+                  Create and manage your contacts, all in one place.
+                </p>
               </div>
-            )}
-          </section>
+
+              <Button className="uppercase" asChild>
+                <Link to={"/admin/suppliers/add-suppliers"}>
+                  Create New Vendor
+                </Link>
+              </Button>
+
+              <Link to="/admin/suppliers/add-supplier">
+                Click here to import vendors from file
+              </Link>
+            </div>
+          )}
         </section>
       </div>
     </div>

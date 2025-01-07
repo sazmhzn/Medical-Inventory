@@ -187,7 +187,7 @@ const DashboardLayout = () => {
   return (
     <div className="flex min-h-screen">
       <SidebarProvider
-        className="grid lg:grid-cols-[auto_1fr]"
+        className="grid sm:grid-cols-[auto_1fr]"
         defaultOpen={!isReportsPage}
         open={isSidebarOpen}
         onOpenChange={setIsSidebarOpen}
