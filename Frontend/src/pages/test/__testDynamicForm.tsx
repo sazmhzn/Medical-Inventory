@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { motion } from "motion/react";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -757,10 +758,20 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
 
             {/* Preview Section */}
             <div className="w-full sticky bottom-0 bg-neutral-100 border-t border-neutral-200 mt-8 p-4 flex justify-end gap-2">
-              <Button type="button" variant="secondary">
+              <motion.Button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="button"
+                variant="secondary"
+              >
                 Save as Draft
+              </motion.Button>
+              <Button
+                type="submit"
+                className="whitespace-nowrap rounded-lg bg-slate-900 px-4 py-2 font-medium text-white shadow-xl transition-colors hover:bg-slate-700"
+              >
+                Save and Send
               </Button>
-              <Button type="submit">Save and Send</Button>
             </div>
           </form>
         </Form>

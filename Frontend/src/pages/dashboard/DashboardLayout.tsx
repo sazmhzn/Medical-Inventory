@@ -150,10 +150,9 @@ const DashboardLayout = () => {
     navMain: [
       {
         title: "Profile",
-        url: "/admin/settings/preferences/orgprofile",
+        url: "/admin/settings/orgprofile",
         icon: SquareTerminal,
-        isActive:
-          location.pathname === "/admin/settings/preferences/orgprofile",
+        isActive: location.pathname === "/admin/settings/orgprofile",
       },
       {
         title: "Users & Roles",

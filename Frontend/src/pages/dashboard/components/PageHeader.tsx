@@ -57,7 +57,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       <div className=" flex gap-4">
         {newButtonLink && (
           <>
-            <Button asChild>
+            <Button
+              asChild
+              className="whitespace-nowrap rounded-md bg-slate-900 px-4 py-2 font-medium text-white shadow-xl transition-colors hover:bg-slate-700"
+            >
               <Link to={newButtonLink}>
                 {" "}
                 <PlusIcon /> Add new
@@ -169,7 +172,7 @@ export const BackHeader: React.FC<BackHeaderProps> = ({
   return (
     <div
       className={cn(
-        "pb-4 space-y-2 flex items-center justify-between",
+        "px-4 pb-4 space-y-2 flex items-center justify-between",
         className
       )}
     >

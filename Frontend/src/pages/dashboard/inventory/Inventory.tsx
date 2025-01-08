@@ -280,7 +280,7 @@ const CSVImportDialog = ({
       onImportSuccess(inventoryItems);
       setFile(null);
     } catch (error) {
-      setError(error.message);
+      setError(error?.message);
     }
   };
 
@@ -330,12 +330,6 @@ const CSVImportDialog = ({
 };
 
 const Inventory = () => {
-  // const {
-  //   data: inventory,
-  //   loading,
-  //   error,
-  //   refetch,
-  // } = useFetchInventory("inventory");
 
   const {
     data: inventory,
@@ -345,7 +339,7 @@ const Inventory = () => {
   } = useInventory();
   const deleteMutation = useDeleteInventoryItem();
 
-  const [viewMode, setViewMode] = useState<String>("Table");
+  const [viewMode, setViewMode] = useState<"Table" | "Card">("Table");
   const [localInventory, setLocalInventory] = useState<InventoryItem[]>([]);
 
   useEffect(() => {
@@ -385,7 +379,7 @@ const Inventory = () => {
       "Custom Value",
     ];
 
-    const dataMapper = (item) => [
+    const dataMapper = (item: any) => [
       item.id,
       item.name,
       item.description,
@@ -448,8 +442,6 @@ const Inventory = () => {
       console.error("Failed to delete items:", error);
     }
   };
-
-  const skeletonRows = Array.from({ length: 5 }, (_, index) => index);
 
   return (
     <div className="w-full">

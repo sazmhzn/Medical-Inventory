@@ -160,14 +160,14 @@ export function GenericTable<T>({
         </DropdownMenu>
       </div>
       {viewMode === "Table" ? (
-        <div className="rounded-md max-w-full border p-2">
+        <div className="rounded-md max-w-full border overflow-hidden">
           <Table>
-            <TableHeader className="bg-gray-200 rounded">
+            <TableHeader className="bg-gray-100 rounded">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableHead key={header.id}>
+                      <TableHead className="text-slate-700" key={header.id}>
                         {header.isPlaceholder
                           ? null
                           : flexRender(

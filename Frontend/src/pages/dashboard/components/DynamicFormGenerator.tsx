@@ -1,9 +1,10 @@
 import React, { memo, useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { motion } from "motion/react";
 import {
   Form,
   FormControl,
@@ -19,14 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CalendarIcon, Check, ChevronsUpDown, CircleHelp } from "lucide-react";
+import { Check, ChevronsUpDown, CircleHelp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CustomTooltip from "@/components/ToolTipAlert";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -646,7 +646,14 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = memo(
 
           {additionalContent}
           <div className="w-full bg-white bottom-0">
-            <Button type="submit">Submit</Button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="whitespace-nowrap rounded-lg bg-slate-900 px-4 py-2 font-medium text-white shadow-xl transition-colors hover:bg-slate-700"
+              type="submit"
+            >
+              Submit
+            </motion.button>
           </div>
         </form>
       </Form>

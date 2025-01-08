@@ -38,13 +38,28 @@ export interface Supplier {
   address: string;
 }
 
-export interface User {
+export interface UserDetails {
   id: number;
   username: string;
-  roles: string[];
+  roles: string;
+  orgName: string;
+  image: string;
   name: string;
   contact: string;
   address: string;
   createdDate: string;
   lastUpdatedDate: string;
+}
+
+// src/types/auth.ts
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
+export interface AuthUser {
+  id: number;
+  username: string;
+  role: string;
+  token: string;
 }
