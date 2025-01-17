@@ -18,53 +18,22 @@ import {
   SquareTerminal,
   Truck,
 } from "lucide-react";
-import { useAuthState } from "@/utils/AuthProvider";
 
-const DashboardLayout = () => {
+const SupplierDashboardLayout = () => {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
-  // Determine if current path is under settings or reports
-  const isSettingsPage = location.pathname.startsWith("/admin/settings");
-  const isReportsPage = location.pathname.startsWith("/admin/reports");
-
-  useEffect(() => {
-    // Auto-collapse sidebar on reports page
-    if (isReportsPage) {
-      setIsSidebarOpen(false);
-    }
-  }, [isReportsPage]);
-
-  // Responsive handler
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setIsSidebarOpen(false);
-      } else if (!isReportsPage) {
-        setIsSidebarOpen(true);
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    handleResize(); // Initial check
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, [isReportsPage]);
-
-  const { user, isAuthenticated } = useAuthState();
-  console.log(user?.username ? user.username : "Manger");
-
   const dashboardData = {
     user: {
-      name: user?.username ? user.username : "Manger",
-      email: user?.emailAddress ? user.emailAddress : "example@example.com",
+      name: "suron",
+      email: "saz@example.com",
       avatar: "/avatars/shadcn.jpg",
     },
     teams: [
       {
-        name: user?.username ? user.username : "Manger",
+        name: "Supplier Inc",
         logo: GalleryVerticalEnd,
-        plan: user?.emailAddress ? user.emailAddress : "example@example.com",
+        plan: "Free",
       },
       {
         name: "Acme Corp.",
@@ -101,12 +70,6 @@ const DashboardLayout = () => {
         url: "/admin/suppliers",
         icon: Truck,
         isActive: location.pathname.startsWith("/admin/suppliers"),
-      },
-      {
-        title: "Reports",
-        url: "/admin/reports",
-        icon: BarChart3,
-        isActive: location.pathname.startsWith("/admin/reports"),
       },
     ],
     projects: [
@@ -185,21 +148,14 @@ const DashboardLayout = () => {
     ],
   };
 
-  const data = isSettingsPage ? settingsData : dashboardData;
-
   return (
     <div className="flex min-h-screen">
       <SidebarProvider
         className="grid sm:grid-cols-[auto_1fr]"
-        defaultOpen={!isReportsPage}
         open={isSidebarOpen}
         onOpenChange={setIsSidebarOpen}
       >
-        <AppSidebar
-          data={data}
-          collapsible={isReportsPage ? "icon" : "offcanvas"}
-          className="border-r border-gray-200"
-        />
+        <AppSidebar data={dashboardData} className="border-r border-gray-200" />
         <main className="w-full overflow-auto">
           <Outlet />
         </main>
@@ -208,4 +164,4 @@ const DashboardLayout = () => {
   );
 };
 
-export default DashboardLayout;
+export default SupplierDashboardLayout;

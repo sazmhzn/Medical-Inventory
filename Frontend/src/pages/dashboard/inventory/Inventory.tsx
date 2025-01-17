@@ -330,7 +330,6 @@ const CSVImportDialog = ({
 };
 
 const Inventory = () => {
-
   const {
     data: inventory,
     isLoading: loading,
@@ -457,7 +456,7 @@ const Inventory = () => {
               {
                 label: "Import Suppliers",
                 icon: <UploadCloudIcon className="h-4 w-4" />,
-                // onClick: handleImport,
+                onClick: CSVImportDialog,
               },
               {
                 label: "Export Suppliers",
@@ -493,12 +492,22 @@ const Inventory = () => {
               onDeleteSelected={handleDeleteItems}
             />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3">
-              <Card className="items-center flex flex-col gap-2 p-4">
-                <CardTitle>Add new Stock</CardTitle>
-                <CardDescription className="flex items-center flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="items-center flex flex-col gap-4 p-6 hover:shadow-lg transition-shadow duration-300">
+                <div className="w-24 h-24">
+                  {/* Replace with the actual image path */}
+                  <img
+                    src="/assets/images/add-item.svg"
+                    alt="Add New Item"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <CardTitle className="text-xl font-semibold">
+                  Add New Stock
+                </CardTitle>
+                <CardDescription className="flex items-center flex-col gap-4 text-center text-sm text-muted-foreground">
                   <p>
-                    Create standalone items and services that you buy and sell
+                    Create standalone items and services that you buy and sell.
                   </p>
 
                   <Button asChild>

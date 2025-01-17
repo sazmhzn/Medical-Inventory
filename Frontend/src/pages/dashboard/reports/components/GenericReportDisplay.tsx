@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import ReportFilter from "./ReportFilter";
 import ReportHeader from "./ReportHeader";
 import { Card, CardContent } from "@/components/ui/card";
+import { useCreateCustomReport } from "@/services/ReportAPI";
 
 // Define proper TypeScript interfaces
 interface SaleItem {
@@ -52,8 +53,7 @@ export default function GenericReportDisplay() {
     type: "item",
     value: "",
   });
-  const [reportData, setReportData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Define report configurations
   const reportConfig: Record<string, ReportConfig> = {
@@ -94,38 +94,12 @@ export default function GenericReportDisplay() {
     return reportConfig[reportType || ""] || null;
   }, [reportType]);
 
-  // Function to fetch data from the database
-  const fetchReportData = async () => {
-    setIsLoading(true);
-    try {
-      // Replace this with your actual API call
-      const response = await fetch(`/api/reports/${reportType}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(filterState),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch report data");
-      }
-
-      const data = await response.json();
-      setReportData(data);
-    } catch (error) {
-      console.error("Error fetching report data:", error);
-      // You might want to show an error message to the user here
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (reportType && currentConfig) {
-      fetchReportData();
-    }
-  }, [reportType, currentConfig]);
+  // Fetch report data using TanStack Query hooks
+  const {
+    data: reportData,
+    // isLoading,
+    isError,
+  } = useCreateCustomReport();
 
   const handleFilterChange = (type: string, value: string) => {
     setFilterState((prev) => ({
@@ -143,7 +117,7 @@ export default function GenericReportDisplay() {
   };
 
   const handleRunReport = () => {
-    fetchReportData();
+    // refetch({});
   };
 
   if (!currentConfig) {
@@ -176,17 +150,17 @@ export default function GenericReportDisplay() {
             onDateRangeChange={handleDateRangeChange}
           />
 
-          {isLoading ? (
+          {/* {isLoading ? (
             <div className="flex justify-center items-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
             </div>
-          ) : (
-            <GenericTable
-              data={reportData}
-              columns={currentConfig.columns}
-              viewMode="Table"
-            />
-          )}
+          ) : ( */}
+          <GenericTable
+            data={reportData || []}
+            context="report"
+            columns={currentConfig.columns}
+            viewMode="Table"
+          />
         </CardContent>
       </Card>
     </div>

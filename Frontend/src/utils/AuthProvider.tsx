@@ -1,53 +1,96 @@
-import { createContext, useContext, useState } from "react";
-import { AuthUser } from "types/types";
+// src/utils/AuthProvider.tsx
+import { createContext, useContext, useEffect, useCallback } from "react";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useNavigate, useLocation } from "react-router-dom";
+import { authKeys } from "@/services/authApi";
+import { User } from "types/auth";
 
 interface AuthContextType {
-  user: AuthUser | null;
-  login: (user: AuthUser) => void;
+  user: User | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  login: (user: User) => void;
   logout: () => void;
+  getCredentials: () => string | null;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  login: () => {},
-  logout: () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    const savedUser = localStorage.getItem("user");
-    try {
-      return savedUser ? JSON.parse(savedUser) : null;
-    } catch (error) {
-      console.error("Error parsing stored user:", error);
-      localStorage.removeItem("user");
-      return null;
-    }
+const PUBLIC_ROUTES = ["/", "/about", "/services", "/login", "/register"];
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const { data: user, isLoading } = useQuery({
+    queryKey: authKeys.user(),
+    queryFn: () => {
+      const savedUser = localStorage.getItem("user");
+      if (!savedUser) return null;
+      return JSON.parse(savedUser) as User;
+    },
+    staleTime: Infinity,
   });
 
-  const login = (userData: AuthUser) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
+  const login = useCallback(
+    (userData: User) => {
+      localStorage.setItem("user", JSON.stringify(userData));
+      queryClient.setQueryData(authKeys.user(), userData);
+    },
+    [queryClient]
+  );
 
-  const logout = () => {
-    setUser(null);
+  const logout = useCallback(() => {
     localStorage.removeItem("user");
-  };
+    queryClient.setQueryData(authKeys.user(), null);
+    queryClient.clear();
+    navigate("/login");
+  }, [queryClient, navigate]);
 
-  const isAuthenticated = !!localStorage.getItem("user");
+  const getCredentials = useCallback(() => {
+    return user?.bota || null;
+  }, [user]);
+
+  useEffect(() => {
+    const isPublicRoute =
+      PUBLIC_ROUTES.includes(location.pathname) ||
+      location.pathname.startsWith("/auth/");
+
+    if (!isLoading) {
+      if (!user && !isPublicRoute) {
+        navigate("/login", {
+          state: { from: location.pathname },
+          replace: true,
+        });
+      } else if (user && location.pathname === "/login") {
+        const intendedPath = location.state?.from || "/admin";
+        navigate(intendedPath);
+      }
+    }
+  }, [user, isLoading, location, navigate]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user: user ?? null,
+        isLoading,
+        isAuthenticated: !!user,
+        login,
+        logout,
+        getCredentials,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
+// Custom hook to use the auth context
+export const useAuthState = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuthState must be used within an AuthProvider");
   }
   return context;
 };

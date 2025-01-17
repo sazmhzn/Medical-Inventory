@@ -1,11 +1,87 @@
-import { Outlet } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
+import AuthPage from "@/pages/auth/AuthPage";
+import { useAuth } from "@/services/authApi";
+import { useAuthState } from "@/utils/AuthProvider";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const AuthLayout = () => {
+  const { loginMutation, registerMutation } = useAuth();
+  const { user, isAuthenticated } = useAuthState();
+
+  const navigate = useNavigate();
+
+  const handleLogin = async (formData) => {
+    try {
+      await loginMutation.mutateAsync({
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        authMethod: "password",
+      });
+      toast({
+        title: "Login Successful",
+        description: "Welcome back! Redirecting to admin dashboard...",
+      });
+      navigate("/admin");
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description:
+          error.response?.data?.message ||
+          "An error occurred while logging in.",
+        variant: "destructive",
+      });
+      console.error("Login failed:", error);
+    }
+  };
+
+  // Example usage for protected content
+
+  const handleRegister = async (formData) => {
+    try {
+      await registerMutation.mutateAsync({
+        emailAddress: formData.emailAddress,
+        username: formData.username,
+        address: formData.address,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        name: formData.fullName,
+        role: formData.role,
+        orgName: formData.companyName,
+      });
+      toast({
+        title: "Registration Successful",
+        description: "Your account has been created.",
+      });
+      navigate("/admin");
+    } catch (error) {
+      toast({
+        title: "Registration Failed",
+        description: error.message || "Unable to register. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSendOtp = async (email, role) => {
+    // await authService.sendOtp({ email, role });
+    console.log("in handleSendOtp");
+  };
+
+  if (!isAuthenticated) {
+    console.log("authenticate first");
+  }
+
   return (
     <section className="bg-white">
       <div className="grid grid-cols-1 lg:grid-cols-2">
         <div className="flex min-h-screen items-center justify-center px-4 py-10 a sm:px-6 lg:px-8 sm:py-16 lg:py-24">
-          <Outlet />
+          {/* <Outlet /> */}
+          <AuthPage
+            onLogin={handleLogin}
+            onRegister={handleRegister}
+            onSendOtp={handleSendOtp}
+          />
         </div>
 
         <div className="flex items-center justify-center px-4 py-10 sm:py-16 lg:py-24 bg-gray-50 sm:px-6 lg:px-8">

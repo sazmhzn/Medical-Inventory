@@ -36,6 +36,9 @@ interface GenericTableProps<T> {
   data: T[];
   columns: ColumnDef<T>[];
   viewMode: "Table" | "Card";
+  detailsPath?: string; // Default to 'item' for backward compatibility
+  searchField?: string; // Default to 'name' for backward compatibility
+  searchPlaceholder?: string; // Default to 'Filter items...' for backward compatibility
   context: string;
   onDeleteSelected?: (selectedIds: string[]) => void;
 }
@@ -55,6 +58,8 @@ export function GenericTable<T>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+
+  console.log(data);
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({
@@ -113,7 +118,7 @@ export function GenericTable<T>({
       <div className="flex items-center gap-4 py-4">
         <Input
           placeholder="Filter stocks..."
-          className="max-w-sm"
+          className="max-w-sm py-0 h-10"
           value={
             (table.getColumn(searchField)?.getFilterValue() as string) ?? ""
           }
@@ -124,7 +129,7 @@ export function GenericTable<T>({
         {Object.keys(rowSelection).length > 0 && (
           <Button
             variant="destructive"
-            size="sm"
+            size="lg"
             onClick={handleDeleteSelected}
             className="flex items-center gap-2"
           >
@@ -234,29 +239,33 @@ export function GenericTable<T>({
           {table.getRowModel().rows.map((row) => (
             <Card
               key={row.id}
-              className="p-4"
+              className="p-6 shadow-md transition-transform flex flex-col items-center transform hover:scale-105 hover:shadow-2xl rounded-lg"
               onClick={() => handleRowClick(row.original.id)}
             >
               {row.getVisibleCells().map((cell) => (
-                <div key={cell.id} className="mb-2">
-                  <strong>{cell.column.columnDef.header}: </strong>
+                <div key={cell.id} className="mb-4 bg-red-100 ">
+                  <strong className="text-gray-700 w-100 mr-2 font-semibold">
+                    {cell.column.columnDef.header}
+                  </strong>
                   {cell.column.id === "image" ? (
-                    <img
-                      src={cell.getValue() as string}
-                      alt="Image"
-                      className="max-w-full h-auto"
-                    />
+                    <div className="w-full h-48 overflow-hidden rounded-lg">
+                      <img
+                        src={cell.getValue() as string}
+                        alt="Image"
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
                   ) : (
                     flexRender(cell.column.columnDef.cell, cell.getContext())
                   )}
                 </div>
               ))}
-              <div className="mt-4 flex justify-end">
+              <div className="mt-6 flex justify-between items-center">
                 <Link
                   to={`/inventory/item/edit/${row.original.id}`}
-                  className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                  className="inline-flex items-center justify-center rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 py-2 px-4 transition-colors"
                 >
-                  <EllipsisVertical className="h-4 w-4 mr-2" />
+                  <EllipsisVertical className="h-5 w-5 mr-2" />
                   Edit
                 </Link>
               </div>

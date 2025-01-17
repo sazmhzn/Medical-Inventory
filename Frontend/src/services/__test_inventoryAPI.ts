@@ -1,12 +1,15 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+// src/services/inventoryApi.ts
+
 import axios from "axios";
+import { useAuthState } from "@/utils/AuthProvider";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const BASE_URL = "http://localhost:8080/mis/inventory";
-const base64Credentials = btoa("admin:admin123");
 
-// API client functions
-const inventoryApi = {
+// Create a factory function for the API that takes credentials
+const createInventoryApi = (base64Credentials: string | null) => ({
   async getAllInventory() {
+    if (!base64Credentials) throw new Error("Authentication required");
     const { data } = await axios.get(`${BASE_URL}`, {
       headers: {
         Authorization: `Basic ${base64Credentials}`,
@@ -16,6 +19,7 @@ const inventoryApi = {
   },
 
   async getInventoryById(id: string) {
+    if (!base64Credentials) throw new Error("Authentication required");
     const { data } = await axios.get(`${BASE_URL}/${id}`, {
       headers: {
         Authorization: `Basic ${base64Credentials}`,
@@ -25,6 +29,7 @@ const inventoryApi = {
   },
 
   async createInventoryItem(itemData: Record<string, any>) {
+    if (!base64Credentials) throw new Error("Authentication required");
     const { data } = await axios.post(`${BASE_URL}/save`, itemData, {
       headers: {
         Authorization: `Basic ${base64Credentials}`,
@@ -35,6 +40,7 @@ const inventoryApi = {
   },
 
   async updateInventoryItem(id: string, itemData: Record<string, any>) {
+    if (!base64Credentials) throw new Error("Authentication required");
     const { data } = await axios.put(`${BASE_URL}/update/${id}`, itemData, {
       headers: {
         Authorization: `Basic ${base64Credentials}`,
@@ -45,6 +51,7 @@ const inventoryApi = {
   },
 
   async deleteInventoryItem(id: string) {
+    if (!base64Credentials) throw new Error("Authentication required");
     const { data } = await axios.delete(`${BASE_URL}/delete/${id}`, {
       headers: {
         Authorization: `Basic ${base64Credentials}`,
@@ -52,9 +59,20 @@ const inventoryApi = {
     });
     return data;
   },
+});
+
+// Custom hook to use the inventory API with auth
+const useInventoryApi = () => {
+  const { getCredentials, isAuthenticated } = useAuthState();
+
+  if (!isAuthenticated) {
+    throw new Error("Authentication required to use inventory API");
+  }
+
+  return createInventoryApi(getCredentials());
 };
 
-// Query key factory
+// Query keys (keep your existing keys)
 export const inventoryKeys = {
   all: ["inventory"] as const,
   lists: () => [...inventoryKeys.all, "list"] as const,
@@ -63,18 +81,21 @@ export const inventoryKeys = {
   detail: (id: string) => [...inventoryKeys.details(), id] as const,
 };
 
-// Hook for fetching all inventory items
+// Custom hooks for inventory operations
 export const useInventory = (enabled = true) => {
+  const inventoryApi = useInventoryApi();
+
   return useQuery({
     queryKey: inventoryKeys.lists(),
     queryFn: () => inventoryApi.getAllInventory(),
     enabled,
-    staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 };
 
-// Hook for fetching a single inventory item
 export const useInventoryItem = (id: string | undefined, enabled = true) => {
+  const inventoryApi = useInventoryApi();
+
   return useQuery({
     queryKey: inventoryKeys.detail(id!),
     queryFn: () => inventoryApi.getInventoryById(id!),
@@ -83,23 +104,22 @@ export const useInventoryItem = (id: string | undefined, enabled = true) => {
   });
 };
 
-// Hook for creating a new inventory item
 export const useCreateInventoryItem = () => {
   const queryClient = useQueryClient();
+  const inventoryApi = useInventoryApi();
 
   return useMutation({
     mutationFn: (newItem: Record<string, any>) =>
       inventoryApi.createInventoryItem(newItem),
     onSuccess: () => {
-      // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: inventoryKeys.lists() });
     },
   });
 };
 
-// Hook for updating an inventory item
 export const useUpdateInventoryItem = () => {
   const queryClient = useQueryClient();
+  const inventoryApi = useInventoryApi();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, any> }) =>
@@ -111,9 +131,9 @@ export const useUpdateInventoryItem = () => {
   });
 };
 
-// Hook for deleting an inventory item
 export const useDeleteInventoryItem = () => {
   const queryClient = useQueryClient();
+  const inventoryApi = useInventoryApi();
 
   return useMutation({
     mutationFn: (id: string) => inventoryApi.deleteInventoryItem(id),
@@ -121,4 +141,20 @@ export const useDeleteInventoryItem = () => {
       queryClient.invalidateQueries({ queryKey: inventoryKeys.lists() });
     },
   });
+};
+
+// Test function for the inventory API
+export const testInventoryApi = async (username: string, password: string) => {
+  const testCredentials = btoa(`${username}:${password}`);
+  const api = createInventoryApi(testCredentials);
+
+  try {
+    // Test getting all inventory items
+    const items = await api.getAllInventory();
+    console.log("Test successful:", items);
+    return true;
+  } catch (error) {
+    console.error("Test failed:", error);
+    return false;
+  }
 };

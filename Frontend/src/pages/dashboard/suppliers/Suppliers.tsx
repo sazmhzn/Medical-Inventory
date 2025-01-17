@@ -10,12 +10,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { PageHeader } from "../components/PageHeader";
 import { GenericTable } from "@/components/GenericTable";
 import { useState } from "react";
-import { Checkbox } from "@radix-ui/react-checkbox";
 import { ColumnDef } from "@tanstack/react-table";
 import { Supplier } from "types/types";
 import { useDeleteSupplier, useSuppliers } from "@/services/SupplierAPI";
 import { useToast } from "@/hooks/use-toast";
 import { handleExport } from "@/utils/ExportExcel";
+import { Checkbox } from "@/components/ui/checkbox";
 const columns: ColumnDef<Supplier>[] = [
   {
     id: "select",

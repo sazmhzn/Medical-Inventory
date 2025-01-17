@@ -34,6 +34,7 @@ type BaseFieldConfig = {
   label: string;
   type:
     | "text"
+    | "password"
     | "number"
     | "tel"
     | "select"
@@ -638,6 +639,7 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
 
       switch (field.type) {
         case "text":
+        case "password":
           defaults[field.name] = "";
           break;
         case "number":
@@ -717,10 +719,12 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
 
               <Tabs defaultValue="Other Details" className="w-full">
                 <TabsList className="flex justify-start gap-4 border-b">
-                  <TabsTrigger className="p-2" value="Other Details">
-                    Other Details
-                  </TabsTrigger>
-                  {!isCustomField && (
+                  {otherDetails.length > 0 && (
+                    <TabsTrigger className="p-2" value="Other Details">
+                      Other Details
+                    </TabsTrigger>
+                  )}
+                  {!isCustomField && customFields.length > 0 && (
                     <TabsTrigger className="p-2" value="Custom Fields">
                       Custom Fields
                     </TabsTrigger>

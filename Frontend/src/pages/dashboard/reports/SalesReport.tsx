@@ -6,7 +6,7 @@ const SalesReport = () => {
   return (
     <section className="rounded-md border">
       <ReportHeader />
-      <ReportFilter />
+      {/* <ReportFilter /> */}
       <ReportTable />
     </section>
   );

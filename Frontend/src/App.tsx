@@ -26,10 +26,12 @@ import { ItemDetails } from "./pages/dashboard/inventory/ItemDetails";
 import { Toaster } from "./components/ui/toaster";
 import { OrderDetails } from "./pages/dashboard/orders/components/OrderDetails";
 import { SupplierDetails } from "./pages/dashboard/suppliers/components/SupplierDetails";
-import ProtectedRoute from "./routes/ProtectedRoute";
 import Users from "./pages/dashboard/settings/Users";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import SupplierDashboard from "./pages/supplier/SupplierDashboard";
+import SupplierDashboardLayout from "./pages/supplier/SupplierDashboardLayout";
 import { AuthProvider } from "./utils/AuthProvider";
+import { ProtectedRoute } from "./routes/ProtectedRoute";
 
 const ErrorFallback = () => {
   return (
@@ -48,14 +50,16 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
           <Routes>
             {/* Main Layout Routes */}
             <Route
               path="/admin"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute
+                  allowedRoles={["ROLE_ADMIN", "ROLE_SUPER_ADMIN"]}
+                >
                   <DashboardLayout />
                 </ProtectedRoute>
               }
@@ -159,6 +163,7 @@ function App() {
               <Route path="*" element={<NoPage />} />
             </Route>
 
+            {/* Public routes */}
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="about" element={<About />} />
@@ -167,18 +172,31 @@ function App() {
               <Route path="*" element={<NoPage />} />
             </Route>
 
-            {/* Auth Routes */}
+            <Route
+              path="/supplier"
+              element={
+                <ProtectedRoute allowedRoles={["ROLE_SUPPLIER"]}>
+                  <SupplierDashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              {/* <Route index element={<SupplierDashboardLayout />} /> */}
+              <Route index element={<SupplierDashboard />} />
+              <Route path="profile/:id" element={<SupplierDetails />} />
+            </Route>
+
+            {/* Auth routes */}
             <Route
               path="/login"
               element={<AuthLayout />}
               errorElement={<ErrorFallback />} // Add fallback error handling
             >
-              <Route index element={<AuthPage />} />
+              {/* <Route index element={<AuthPage />} /> */}
             </Route>
           </Routes>
           <Toaster />
-        </BrowserRouter>
-      </AuthProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }

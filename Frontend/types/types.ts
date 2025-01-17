@@ -31,6 +31,14 @@ export interface OrderItem {
   amount?: number;
 }
 
+export interface Order {
+  id: string;
+  status: string;
+  orderDate: string;
+  items: any[];
+  totalAmount: number;
+}
+
 export interface Supplier {
   id: number;
   name: string;
@@ -53,13 +61,41 @@ export interface UserDetails {
 
 // src/types/auth.ts
 export interface LoginCredentials {
+  email: string;
+  password?: string;
+  otp?: string;
+  role: UserRole;
+  authMethod: "password" | "otp";
+}
+
+export interface OtpRequest {
+  email: string;
+  role: UserRole;
+}
+
+export interface RegisterCredentials {
   username: string;
   password: string;
+  confirmPassword: string;
+  name: string;
+  orgName: string;
+  contact?: string;
+  emailAddress: string;
+  role: UserRole;
 }
 
 export interface AuthUser {
   id: number;
   username: string;
-  role: string;
-  token: string;
+  name: string;
+  role: UserRole;
+  emailAddress: string;
+  orgName: string;
+}
+
+export enum UserRole {
+  SUPER_ADMIN = "SUPER_ADMIN",
+  INVENTORY_MANAGER = "ADMIN",
+  SUPPLIER = "SUPPLIER",
+  CUSTOMER = "CUSTOMER",
 }

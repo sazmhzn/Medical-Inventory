@@ -126,6 +126,7 @@ const Order = () => {
       });
     }
   };
+  console.log(orders);
 
   const handleViewMode = () => {
     setViewMode(viewMode === "Table" ? "Card" : "Table");
@@ -158,7 +159,7 @@ const Order = () => {
             <p>Loading...</p>
           ) : orders?.length ? (
             <GenericTable
-              viewMode={viewMode}
+              viewMode="Table"
               data={orders}
               columns={columns}
               context="orders"
