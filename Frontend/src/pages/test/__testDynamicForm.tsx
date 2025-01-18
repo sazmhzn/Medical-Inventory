@@ -703,9 +703,12 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
   return (
     <div className="">
       {/* Form Container */}
-      <div className="pt-6 bg-white rounded-lg shadow-sm">
+      <div className="pt-6 relative bg-white rounded-lg shadow-sm">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className=" space-y-6">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className=" space-y-6 relative"
+          >
             <div className="px-4">
               {/* Default Fields */}
               <div className="w-1/2">
@@ -736,7 +739,7 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
                     <div className="w-1/2">
                       <p className="mb-4">
                         {" "}
-                        Make changes to your account here.
+                        Add other detail for your inventory.
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {otherDetails.map(renderField)}
@@ -762,14 +765,9 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
 
             {/* Preview Section */}
             <div className="w-full sticky bottom-0 bg-neutral-100 border-t border-neutral-200 mt-8 p-4 flex justify-end gap-2">
-              <motion.Button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                type="button"
-                variant="secondary"
-              >
+              <Button type="button" variant="secondary">
                 Save as Draft
-              </motion.Button>
+              </Button>
               <Button
                 type="submit"
                 className="whitespace-nowrap rounded-lg bg-slate-900 px-4 py-2 font-medium text-white shadow-xl transition-colors hover:bg-slate-700"

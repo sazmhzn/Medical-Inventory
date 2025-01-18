@@ -11,13 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { ColumnDef } from "@tanstack/react-table";
 import {
@@ -25,7 +18,6 @@ import {
   EllipsisVertical,
   RefreshCwIcon,
   SettingsIcon,
-  Upload,
   UploadCloudIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -46,7 +38,7 @@ import {
   TableCell,
   Table,
 } from "@/components/ui/table";
-import { handleExport } from "@/utils/ExportExcel";
+import { exportToExcel } from "@/lib/excel-utils";
 
 export type InventoryItem = {
   id: string;
@@ -202,126 +194,6 @@ const columns: ColumnDef<InventoryItem>[] = [
   },
 ];
 
-const CSVImportDialog = ({
-  onImportSuccess,
-}: {
-  onImportSuccess: (data: InventoryItem[]) => void;
-}) => {
-  const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState<string>("");
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile && selectedFile.type === "text/csv") {
-      setFile(selectedFile);
-      setError("");
-    } else {
-      setError("Please select a valid CSV file");
-      setFile(null);
-    }
-  };
-
-  const processCSVData = (csvText: string) => {
-    try {
-      const lines = csvText.split("\n");
-      const headers = lines[0].split(",").map((header) => header.trim());
-
-      const inventoryItems: InventoryItem[] = lines
-        .slice(1)
-        .filter((line) => line.trim())
-        .map((line) => {
-          const values = line.split(",").map((value) => value.trim());
-          const item: any = {};
-
-          headers.forEach((header, index) => {
-            if (
-              header === "stock" ||
-              header === "price" ||
-              header === "reorder"
-            ) {
-              item[header] = parseFloat(values[index]) || 0;
-            } else {
-              item[header] = values[index];
-            }
-          });
-
-          // Add default values for required fields if missing
-          item.status =
-            item.stock <= item.reorder
-              ? item.stock === 0
-                ? "critical"
-                : "low"
-              : "good";
-          item.type = item.type || "good";
-          item.id = item.id || crypto.randomUUID();
-
-          return item as InventoryItem;
-        });
-
-      return inventoryItems;
-    } catch (error) {
-      throw new Error("Failed to process CSV file. Please check the format.");
-    }
-  };
-
-  const handleImport = async () => {
-    if (!file) return;
-
-    try {
-      const text = await file.text();
-      const inventoryItems = processCSVData(text);
-      onImportSuccess(inventoryItems);
-      setFile(null);
-    } catch (error) {
-      setError(error?.message);
-    }
-  };
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <Upload className="w-4 h-4" />
-          Import CSV
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Import Inventory from CSV</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleFileChange}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-            {error && <p className="text-sm text-red-500">{error}</p>}
-          </div>
-          <div className="text-sm text-muted-foreground">
-            <p>The CSV file should contain the following columns:</p>
-            <ul className="list-disc list-inside mt-2">
-              <li>name (required)</li>
-              <li>stock (required, number)</li>
-              <li>price (required, number)</li>
-              <li>reorder (required, number)</li>
-              <li>unit</li>
-              <li>type</li>
-              <li>manufacturer</li>
-              <li>category</li>
-              <li>description</li>
-            </ul>
-          </div>
-          <Button onClick={handleImport} disabled={!file}>
-            Import Data
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
 const Inventory = () => {
   const {
     data: inventory,
@@ -355,47 +227,22 @@ const Inventory = () => {
 
   // Inventory-specific method
   const handleExportInventory = () => {
-    const headers = [
-      "ID",
-      "Name",
-      "Description",
-      "SKU",
-      "Unit",
-      "Type",
-      "Stock",
-      "Price",
-      "Reorder Level",
-      "Expiry Date",
-      "Manufacturer",
-      "Batch Number",
-      "Category",
-      "Storage Conditions",
-      "Created Date",
-      "Last Updated Date",
-      "Custom Value",
-    ];
+    if (!inventory) return;
 
-    const dataMapper = (item: any) => [
-      item.id,
-      item.name,
-      item.description,
-      item.sku,
-      item.unit,
-      item.type,
-      item.stock,
-      item.price,
-      item.reorder,
-      item.expiryDate,
-      item.manufacturer,
-      item.batchNumber,
-      item.category,
-      item.storageConditions,
-      new Date(item.createdDate).toLocaleDateString(),
-      new Date(item.lastUpdatedDate).toLocaleDateString(),
-      item.customValue || "N/A",
-    ];
-
-    handleExport(inventory, "inventory", headers, dataMapper);
+    try {
+      exportToExcel(inventory, "inentory-export");
+      toast({
+        title: "Export Successful",
+        description: "Successfully exported inventory to Excel",
+        variant: "success",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export inventory to Excel",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleRefresh = () => {
@@ -403,7 +250,6 @@ const Inventory = () => {
   };
 
   const handleImportSuccess = (importedData: InventoryItem[]) => {
-    setLocalInventory((prev) => [...prev, ...importedData]);
     refetch();
   };
 
@@ -450,13 +296,13 @@ const Inventory = () => {
             title="All Inventory"
             newButtonLink="/admin/inventory/add-item"
             actions={[
+              // {
+              //   label: "Import Inventory",
+              //   icon: <UploadCloudIcon className="h-4 w-4" />,
+              //   onClick: handleImportSuccess,
+              // },
               {
-                label: "Import Suppliers",
-                icon: <UploadCloudIcon className="h-4 w-4" />,
-                onClick: CSVImportDialog,
-              },
-              {
-                label: "Export Suppliers",
+                label: "Export Inventory",
                 icon: <DownloadCloudIcon className="h-4 w-4" />,
                 onClick: handleExportInventory,
               },

@@ -123,7 +123,7 @@ export function OrderDetails() {
             backTo={`/${role === "ROLE_ADMIN" ? "admin/orders" : "supplier"}`}
           />
 
-          {role === "ROLE_ADMIN" &&
+          {/* {role === "ROLE_ADMIN" &&
             orderDetails &&
             orderDetails.status !== "DELIVERED" &&
             orderDetails.status !== "REJECTED" && (
@@ -134,7 +134,7 @@ export function OrderDetails() {
                 <Edit className="w-4 h-4" />
                 Edit Order
               </Button>
-            )}
+            )} */}
         </div>
 
         {detailsLoading ? (

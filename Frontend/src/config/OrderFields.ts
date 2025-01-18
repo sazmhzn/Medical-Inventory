@@ -1,20 +1,20 @@
 import { FieldConfig } from "@/pages/test/__testDynamicForm";
 
 export const orderFields: FieldConfig[] = [
-  {
-    name: "companyName",
-    label: "Company",
-    type: "select",
-    gridWidth: "full",
-    section: "default",
-    options: [
-      { value: "medicine", label: "Medicine" },
-      { value: "equipment", label: "Equipment" },
-      { value: "supplies", label: "Supplies" },
-      { value: "supplement", label: "Supplement" },
-    ],
-    required: true,
-  },
+  // {
+  //   name: "companyName",
+  //   label: "Company",
+  //   type: "select",
+  //   gridWidth: "full",
+  //   section: "default",
+  //   options: [
+  //     { value: "medicine", label: "Medicine" },
+  //     { value: "equipment", label: "Equipment" },
+  //     { value: "supplies", label: "Supplies" },
+  //     { value: "supplement", label: "Supplement" },
+  //   ],
+  //   required: true,
+  // },
   {
     name: "salesOrder",
     label: "Sales Order #",

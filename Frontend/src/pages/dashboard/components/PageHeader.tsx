@@ -172,7 +172,7 @@ export const BackHeader: React.FC<BackHeaderProps> = ({
   return (
     <div
       className={cn(
-        "px-4 pb-4 space-y-2 flex items-center justify-between",
+        "px-4 w-full pb-4 space-y-2 flex items-center justify-between",
         className
       )}
     >

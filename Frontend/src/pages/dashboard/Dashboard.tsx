@@ -23,6 +23,8 @@ import Starter from "./components/Starter";
 import { useFetchInventory } from "@/services/InventoryAPI";
 import { InventoryItem } from "./inventory/Inventory";
 import { useInventory } from "@/services/__test_inventoryAPI";
+import FutureUpdatesCard from "./components/FutureUpdates";
+import { useOrders } from "@/services/OrderAPI";
 
 interface StockData extends InventoryItem {
   status: "critical" | "low" | "good";
@@ -36,24 +38,34 @@ interface DashboardSummary {
   allItems: number;
 }
 
-const SalesMetricCard = ({
-  title,
-  value,
-}: {
+interface Order {
+  id: number;
+  orderDate: string;
+  status: "DELIVERED" | "SHIPPED" | "ACCEPTED";
+  supplierId: number;
+  supplierName: string;
+  supplierOrganization: string;
+  supplierContact: string;
+  customerId: number;
+  customerName: string;
+  customerOrganization: string;
+  items: OrderItem[];
+  totalAmount: number;
+  createdDate: string;
+  lastUpdatedDate: string;
+}
+
+interface SalesMetricCardProps {
   title: string;
   value: number;
-}) => (
-  <div className="p-4 flex flex-col items-center">
-    <div className="text-center mb-4">
-      <h1 className="text-5xl font-semibold text-blue-500">{value}</h1>
-      <p className="text-sm text-gray-400">Qty</p>
-    </div>
-    <div className="text-center inline-flex items-center gap-2">
-      <span className="aspect-square w-6 h-6 border rounded-full">
-        <Package />
-      </span>
-      <p className="uppercase font-medium text-md">{title}</p>
-    </div>
+  subtitle?: string;
+}
+
+const SalesMetricCard = ({ title, value, subtitle }: SalesMetricCardProps) => (
+  <div className="p-4 flex-1 text-center">
+    <h4 className="text-lg text-neutral-500 mb-2">{title}</h4>
+    <p className="text-3xl font-semibold text-blue-500">{value}</p>
+    {subtitle && <p className="text-sm text-neutral-400 mt-1">{subtitle}</p>}
   </div>
 );
 
@@ -84,6 +96,7 @@ const Dashboard = () => {
 
   // const { data: inventory, loading } = useFetchInventory("inventory");
   const { data: inventory, isLoading } = useInventory();
+  const { data: orders, isLoading: orderLoading, refetch } = useOrders();
 
   useEffect(() => {
     if (!inventory) return;
@@ -112,10 +125,34 @@ const Dashboard = () => {
 
     setStockData(processedData);
     setSummary(newSummary);
-    sessionStorage.setItem("stockData", JSON.stringify(processedData));
   }, [inventory]);
 
   if (isLoading) return <div>Loading</div>;
+
+  if (!orders?.success) return <div>{orders?.message}</div>;
+
+  const metrics = {
+    toBePacked: orders?.data.filter((order) => order.status === "ACCEPTED")
+      .length,
+    toBeDelivered: orders?.data.filter((order) => order.status === "SHIPPED")
+      .length,
+    delivered: orders?.data.filter((order) => order.status === "DELIVERED")
+      .length,
+  };
+
+  // Calculate inventory metrics
+  const inventoryMetrics = {
+    quantityInHand: orders.data.reduce(
+      (total, order) =>
+        total + order.items.reduce((sum, item) => sum + item.quantity, 0),
+      0
+    ),
+    totalOrder: orders.data.length,
+    totalValue: orders.data.reduce(
+      (total, order) => total + order.totalAmount,
+      0
+    ),
+  };
 
   return (
     <div className="w-full">
@@ -125,7 +162,7 @@ const Dashboard = () => {
           <TabsList className="grid w-full grid-cols-3 md:grid-cols-4 rounded-none">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="starter">Getting Started</TabsTrigger>
-            <TabsTrigger value="updates">Recent Updates</TabsTrigger>
+            <TabsTrigger value="updates">Upcomming Updates</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
@@ -136,11 +173,23 @@ const Dashboard = () => {
                     <h3 className="text-xl text-neutral-800">Sales Activity</h3>
                   </header>
                   <div className="flex bg-white justify-between items-center">
-                    <SalesMetricCard title="To be packed" value={0} />
+                    <SalesMetricCard
+                      title="To be packed"
+                      value={metrics.toBePacked}
+                      subtitle="Accepted Orders"
+                    />
                     <Separator orientation="vertical" className="h-20 border" />
-                    <SalesMetricCard title="To be Delivered" value={0} />
+                    <SalesMetricCard
+                      title="To be Delivered"
+                      value={metrics.toBeDelivered}
+                      subtitle="Shipped Orders"
+                    />
                     <Separator orientation="vertical" className="h-20 border" />
-                    <SalesMetricCard title="To be packed" value={0} />
+                    <SalesMetricCard
+                      title="Delivered"
+                      value={metrics.delivered}
+                      subtitle="Completed Orders"
+                    />
                   </div>
                 </article>
 
@@ -152,20 +201,29 @@ const Dashboard = () => {
                   </header>
                   <div className="p-4 flex flex-col justify-between">
                     <div className="flex justify-between mb-4">
-                      <h1 className="text-md font-normal text-neutral-400 uppercase">
-                        Quantity in hand
+                      <h1 className="text-md font-normal text-neutral-500 uppercase">
+                        Total Orders
                       </h1>
                       <p className="text-xl font-semibold text-neutral-800">
-                        {summary.quantityInHand}
+                        {inventoryMetrics.totalOrder}
                       </p>
                     </div>
                     <Separator orientation="horizontal" className="mb-4" />
                     <div className="flex justify-between mb-4">
-                      <h1 className="text-md font-normal text-neutral-400 uppercase">
-                        Quantity to be received
+                      <h1 className="text-md font-normal text-neutral-500 uppercase">
+                        Total Items Ordered
                       </h1>
                       <p className="text-xl font-semibold text-neutral-800">
-                        {summary.quantityToBeReceived}
+                        {inventoryMetrics.quantityInHand}
+                      </p>
+                    </div>
+                    <Separator orientation="horizontal" className="mb-4" />
+                    <div className="flex justify-between">
+                      <h1 className="text-md font-normal text-neutral-500 uppercase">
+                        Total Value
+                      </h1>
+                      <p className="text-xl font-semibold text-neutral-800">
+                        NRS {inventoryMetrics.totalValue.toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -288,7 +346,9 @@ const Dashboard = () => {
             <Starter />
           </TabsContent>
 
-          <TabsContent value="updates">Never Miss an Update</TabsContent>
+          <TabsContent value="updates">
+            <FutureUpdatesCard />
+          </TabsContent>
         </Tabs>
       </div>
     </div>

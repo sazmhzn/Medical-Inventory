@@ -3,6 +3,7 @@ import { Separator } from "../ui/separator";
 import {
   Bell,
   CirclePlus,
+  FileText,
   LayoutGrid,
   PlusIcon,
   Settings,
@@ -56,84 +57,149 @@ const HeaderTitle = ({ title }: { title: string }) => {
             <DropdownMenuTrigger asChild>
               <Button variant="default" asChild>
                 <Link to={"/"}>
-                  <PlusIcon className="w-4 h-4" />
+                  <CirclePlus className="w-4 h-4" />
                 </Link>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full  shadow-none p-8 px-4">
+            <DropdownMenuContent className="w-full shadow-none p-8 px-4">
               <Card
                 className={cn("w-full bg-transparent border-none shadow-none")}
               >
                 <CardContent className="grid grid-cols-2 gap-16">
+                  {/* General Section */}
                   <div className="space-y-4">
                     <h4 className="flex gap-2 text-neutral-600 uppercase">
-                      {" "}
                       <span>
-                        <LayoutGrid className="w-4" />{" "}
-                      </span>{" "}
-                      general
+                        <LayoutGrid className="w-4" />
+                      </span>
+                      General
                     </h4>
-
                     <div className="space-y-2 flex flex-col">
-                      {" "}
                       <Link
-                        to="/create-item"
+                        to="/admin/inventory/add-item"
                         className="text-sm font-[500] text-neutral-600 flex items-center gap-2"
                       >
                         Create New Item
                       </Link>
                       <Link
-                        to="/inventory"
+                        to="/admin/inventory"
                         className="text-sm font-[500] text-neutral-600 flex items-center gap-2"
                       >
                         View Inventory
                       </Link>
                       <Link
-                        to="/create-item"
+                        to="/admin/orders/add-order"
                         className="text-sm font-[500] text-neutral-600 flex items-center gap-2"
                       >
                         Create New Order
                       </Link>
                       <Link
-                        to="/inventory"
+                        to="/admin/orders"
                         className="text-sm font-[500] text-neutral-600 flex items-center gap-2"
                       >
-                        View Inventory
+                        View Orders
                       </Link>
                     </div>
                   </div>
+
+                  {/* Sales Section */}
                   <div className="space-y-4">
                     <h4 className="flex gap-2 text-neutral-600 uppercase">
                       <span>
-                        <ShoppingCart className="w-4" />{" "}
-                      </span>{" "}
-                      sales
+                        <ShoppingCart className="w-4" />
+                      </span>
+                      Sales
                     </h4>
                     <div className="flex flex-col space-y-2">
                       <Link
-                        to="/create-item"
+                        to="/admin/suppliers/add-suppliers"
                         className="text-sm font-[500] text-neutral-600 flex items-center gap-2"
                       >
-                        <CirclePlus className="w-4 h-4" />
-                        Customer
+                        Add Supplier
                       </Link>
                       <Link
-                        to="/inventory"
+                        to="/admin/suppliers"
                         className="text-sm font-[500] text-neutral-600"
                       >
-                        Invoices
+                        View Suppliers
                       </Link>
                       <Link
-                        to="/create-item"
+                        to="/admin/reports"
                         className="text-sm font-[500] text-neutral-600"
                       >
-                        Sales Receipts
+                        Reports
                       </Link>
                       <Link
-                        to="/inventory"
+                        to="/admin/reports/sales-by-item"
                         className="text-sm font-[500] text-neutral-600"
                       >
-                        Sales Order
+                        Sales By Item
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Reports Section */}
+                  <div className="space-y-4">
+                    <h4 className="flex gap-2 text-neutral-600 uppercase">
+                      <span>
+                        <FileText className="w-4" />
+                      </span>
+                      Reports
+                    </h4>
+                    <div className="flex flex-col space-y-2">
+                      <Link
+                        to="/admin/reports"
+                        className="text-sm font-[500] text-neutral-600"
+                      >
+                        General Reports
+                      </Link>
+                      <Link
+                        to="/admin/reports/sales-by-customer"
+                        className="text-sm font-[500] text-neutral-600"
+                      >
+                        Sales By Customer
+                      </Link>
+                      <Link
+                        to="/admin/reports/sales-by-item"
+                        className="text-sm font-[500] text-neutral-600"
+                      >
+                        Sales By Item
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Settings Section */}
+                  <div className="space-y-4">
+                    <h4 className="flex gap-2 text-neutral-600 uppercase">
+                      <span>
+                        <Settings className="w-4" />
+                      </span>
+                      Settings
+                    </h4>
+                    <div className="flex flex-col space-y-2">
+                      <Link
+                        to="/admin/settings/orgprofile"
+                        className="text-sm font-[500] text-neutral-600"
+                      >
+                        Organization Profile
+                      </Link>
+                      <Link
+                        to="/admin/settings/preferences/users"
+                        className="text-sm font-[500] text-neutral-600"
+                      >
+                        User Preferences
+                      </Link>
+                      <Link
+                        to="/admin/settings/preferences/inventory"
+                        className="text-sm font-[500] text-neutral-600"
+                      >
+                        Inventory Settings
+                      </Link>
+                      <Link
+                        to="/admin/settings/preferences/suppliers"
+                        className="text-sm font-[500] text-neutral-600"
+                      >
+                        Supplier Preferences
                       </Link>
                     </div>
                   </div>

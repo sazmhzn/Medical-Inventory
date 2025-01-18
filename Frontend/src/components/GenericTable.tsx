@@ -245,8 +245,8 @@ export function GenericTable<T>({
               className="p-6 shadow-md transition-transform flex flex-col items-center transform hover:scale-105 hover:shadow-2xl rounded-lg"
               onClick={() => handleRowClick(row.original.id)}
             >
-              {row.getVisibleCells().map((cell) => (
-                <div key={cell.id} className="mb-4 bg-red-100 ">
+              {row.getVisibleCells().map((cell: any) => (
+                <div key={cell.id} className="mb-4 bg-red-100 w-full">
                   <strong className="text-gray-700 w-100 mr-2 font-semibold">
                     {cell.column.columnDef.header}
                   </strong>
@@ -263,7 +263,7 @@ export function GenericTable<T>({
                   )}
                 </div>
               ))}
-              <div className="mt-6 flex justify-between items-center">
+              <div className="mt-6 flex justify-between items-center w-full">
                 <Link
                   to={`/inventory/item/edit/${row.original.id}`}
                   className="inline-flex items-center justify-center rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 py-2 px-4 transition-colors"

@@ -32,6 +32,7 @@ import SupplierDashboard from "./pages/supplier/SupplierDashboard";
 import SupplierDashboardLayout from "./pages/supplier/SupplierDashboardLayout";
 import { AuthProvider } from "./utils/AuthProvider";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
+import EditOrder from "./pages/dashboard/orders/EditOrder";
 
 const ErrorFallback = () => {
   return (

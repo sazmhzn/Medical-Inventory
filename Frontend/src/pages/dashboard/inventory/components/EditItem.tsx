@@ -15,6 +15,7 @@ import { useFieldManager } from "@/pages/test/__useFieldManager";
 import { getCustomFields } from "@/lib/customFileManager";
 import { useMemo } from "react";
 import { itemFields } from "@/config/ItemFields";
+import { toast } from "@/hooks/use-toast";
 
 const EditItem = () => {
   const { id } = useParams();
@@ -37,19 +38,20 @@ const EditItem = () => {
 
   const fields = [...itemFields, ...customFields];
 
-  const { allFields, addCustomField, removeCustomField, getFieldsBySection } =
-    useFieldManager(itemFields, "inventory");
-
+  useFieldManager(itemFields, "inventory");
 
   const handleSubmit = async (data: Record<string, any>) => {
     console.log("clicked");
     try {
       const result = await updateInventoryItem(id, data);
-      console.log(data);
-      alert("Item added successfully!");
+      console.log(result);
+      toast({
+        title: "Item Edited Successful",
+        description: "Item edited successfully! Redirecting to...",
+      });
+      navigate("/admin");
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("There was an error submitting the form. Please try again.");
     }
   };
 

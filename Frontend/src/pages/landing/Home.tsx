@@ -320,9 +320,9 @@ const Home = () => {
         }}
         className="bg-white min-h-screen py-16"
       >
-        <div className="container mx-auto max-w-7xl relative">
-          <div className="flex md:flex-row relative h-full flex-col gap-12">
-            <div className="flex-1 space-y-4 pb-56 mx-auto">
+        <div className="p-4 container mx-auto max-w-7xl relative">
+          <div className="flex lg:flex-row relative h-full flex-col lg:gap-12">
+            <div className="flex-1 space-y-4 lg:pb-56 mx-auto">
               <div className="relative h-full">
                 <div className="sticky top-20 max-h-[calc(100vh-5rem)] overflow-hidden">
                   <h1 className="w-[20ch] text-black md:text-5xl text-xl font-bold font-['Inter'] md:leading-[52px]">
@@ -521,7 +521,7 @@ const Home = () => {
           alt=""
         />
         <div className="container mx-auto  max-w-7xl relative">
-          <div className="mx-auto relative pb-16 p-6">
+          <div className="mx-auto  relative p-6">
             <h1 className="md:w-[30ch] mx-auto text-2xl md:text-5xl font-bold text-center mb-6">
               Let’s Transform Your Business
             </h1>

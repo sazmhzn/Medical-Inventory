@@ -15,6 +15,9 @@ import HeaderTitle from "@/components/commons/header-title";
 import { PageHeader } from "../components/PageHeader";
 import { useFetchCustomFormsByEntityType } from "@/services/CustomFormAPI";
 import { CustomField } from "types/customFields";
+import CustomTooltip from "@/components/ToolTipAlert";
+import { CircleHelp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface OrderFormData {
   salesOrderDate: string;
@@ -32,6 +35,7 @@ const initialOrderItem: OrderItem = {
 };
 const AddSalesOrders = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const createOrder = useCreateOrder();
   const {
     data: customFormsData,
@@ -113,10 +117,10 @@ const AddSalesOrders = () => {
 
       await createOrder.mutateAsync(orderData);
       toast({
-        title: "Success!",
-        description: "Order created successfully",
-        variant: "success",
+        title: "Item Edited Successful",
+        description: "Item edited successfully! Redirecting to...",
       });
+      navigate("/admin/orders");
     } catch (error) {
       toast({
         title: "Error",
@@ -155,6 +159,36 @@ const AddSalesOrders = () => {
             context="order"
             additionalContent={
               <>
+                <div className="mt-4 p-4">
+                  {/* Warning Section */}
+                  <div className="mt-6 p-4 border border-yellow-300 bg-yellow-50 rounded-md flex items-center gap-3">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 text-yellow-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                      />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-medium text-yellow-700">
+                        Warning: Once you add this order, it cannot be updated
+                        later.
+                      </p>
+                      <p className="text-xs text-yellow-600">
+                        Please review all the details carefully before
+                        proceeding.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <SupplierSelect
                   value={selectedSupplier.toString()}
                   onChange={(value) => setSelectedSupplier(Number(value))}
