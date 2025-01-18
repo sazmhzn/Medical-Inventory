@@ -59,6 +59,7 @@ export function GenericTable<T>({
     []
   );
 
+  console.log("Data from Generic table");
   console.log(data);
 
   const [columnVisibility, setColumnVisibility] =

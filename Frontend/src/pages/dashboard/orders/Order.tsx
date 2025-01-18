@@ -2,7 +2,7 @@ import HeaderTitle from "@/components/commons/header-title";
 import { GenericTable } from "@/components/GenericTable";
 import { Button } from "@/components/ui/button";
 import { Info, PlusIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   DropdownMenu,
@@ -13,13 +13,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { useFetchInventory } from "@/services/InventoryAPI";
-import { InventoryItem } from "../inventory/Inventory";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { useDeleteOrders, useOrders } from "@/services/OrderAPI";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const columns: ColumnDef[] = [
   {
@@ -47,37 +51,111 @@ const columns: ColumnDef[] = [
   {
     accessorKey: "status",
     header: "Status",
+    cell: ({ row }) => {
+      const status = row.getValue("status");
+      return (
+        <span
+          className={`px-2 py-1 rounded-full text-sm ${
+            status === "PENDING"
+              ? "bg-yellow-100 text-yellow-800"
+              : status === "CANCELLED"
+                ? "bg-red-100 text-red-800"
+                : status === "COMPLETED"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-gray-100 text-gray-800"
+          }`}
+        >
+          {status}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "id",
     header: "Order Id",
   },
   {
-    accessorKey: "supplierId",
-    header: "supplierId",
+    accessorKey: "supplierName",
+    header: "Supplier",
+  },
+  {
+    accessorKey: "items",
+    header: "Items Detail",
+    cell: ({ row }) => {
+      const items = row.getValue("items") as Array<{
+        itemName: string;
+        quantity: number;
+      }>;
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className="text-left">
+              <div>
+                <span className="font-medium">{items.length} items</span>
+                <span className="text-gray-500 block text-sm">
+                  Total Qty:{" "}
+                  {items.reduce((acc, item) => acc + item.quantity, 0)}
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <ul className="list-disc pl-4">
+                {items.map((item, index) => (
+                  <li key={index}>
+                    {item.itemName} (Qty: {item.quantity})
+                  </li>
+                ))}
+              </ul>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    },
   },
   {
     accessorKey: "createdDate",
     header: "Date",
-  },
-  {
-    accessorKey: "items",
-    header: "Item Quantity",
     cell: ({ row }) => {
-      const items = row.getValue("items");
-      return items.reduce((acc, item) => acc + item.quantity, 0);
+      const date = new Date(row.getValue("createdDate"));
+      return date.toLocaleDateString();
     },
   },
   {
     accessorKey: "totalAmount",
     header: "Total Amount",
+    cell: ({ row }) => {
+      const amount = row.getValue("totalAmount");
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(amount);
+    },
   },
-
   {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original;
+      const order = row.original;
+      const { toast } = useToast();
+      // const cancelOrderMutation = useCancelOrder();
+
+      // const handleCancelOrder = async () => {
+      //   try {
+      //     await cancelOrderMutation.mutateAsync(order.id);
+      //     toast({
+      //       title: "Success",
+      //       description: "Order cancelled successfully",
+      //     });
+      //   } catch (error) {
+      //     toast({
+      //       title: "Error",
+      //       description: "Failed to cancel order",
+      //       variant: "destructive",
+      //     });
+      //   }
+      // };
+
+      const isPending = order.status === "PENDING";
 
       return (
         <DropdownMenu>
@@ -90,13 +168,30 @@ const columns: ColumnDef[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
+              onClick={() => navigator.clipboard.writeText(order.id)}
             >
-              Copy payment ID
+              Copy order ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View More</DropdownMenuItem>
-            <DropdownMenuItem>View Suppliers</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to={`/admin/orders/${order.id}`}>View Details</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to={`/admin/suppliers/profile/${order.supplierId}`}>
+                View Supplier
+              </Link>
+            </DropdownMenuItem>
+            {isPending && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  // onClick={handleCancelOrder}
+                  className="text-red-600"
+                >
+                  Cancel Order
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -134,7 +229,7 @@ const Order = () => {
 
   return (
     <div className="w-full">
-      <HeaderTitle />
+      <HeaderTitle title="Order" />
 
       <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <section className="border-b py-4">
@@ -157,10 +252,10 @@ const Order = () => {
         <section className="p-6 ">
           {isLoading ? (
             <p>Loading...</p>
-          ) : orders?.length ? (
+          ) : orders?.data?.length ? (
             <GenericTable
               viewMode="Table"
-              data={orders}
+              data={orders.data}
               columns={columns}
               context="orders"
               detailsPath="details"

@@ -133,7 +133,7 @@ const createOrderApi = (base64Credentials: string | null) => {
   return {
     async getAll() {
       if (!base64Credentials) throw new Error("Authentication required");
-      const { data } = await axiosInstance.get("");
+      const { data } = await axiosInstance.get("/details");
       return data;
     },
 
