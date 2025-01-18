@@ -1,5 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { motion } from "motion/react";
+import React, { memo, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -24,8 +23,8 @@ import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CustomTooltip from "@/components/ToolTipAlert";
-import { AlertCircle, CheckCircle2, CircleHelp } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, CircleHelp } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 
 // Field configuration types
@@ -463,11 +462,11 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
   const getGridClass = (width?: string) => {
     switch (width) {
       case "full":
-        return "md:col-span-2";
+        return "col-span-2";
       case "half":
         return "col-span-1";
       case "third":
-        return "col-span-1 md:col-span-1";
+        return "col-span-2 md:col-span-1";
       default:
         return "col-span-2 md:col-span-1"; // Default to half width on medium screens
     }
@@ -699,6 +698,9 @@ const DynamicFormGenerator: React.FC<DynamicFormProps> = ({
     defaultValues: defaultValues,
     mode: "onChange",
   });
+
+  console.log(fields);
+  console.log(initialValues);
 
   return (
     <div className="">

@@ -33,6 +33,7 @@ import SupplierDashboardLayout from "./pages/supplier/SupplierDashboardLayout";
 import { AuthProvider } from "./utils/AuthProvider";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import EditOrder from "./pages/dashboard/orders/EditOrder";
+import EditSuppliers from "./pages/dashboard/suppliers/EditSuppliers";
 
 const ErrorFallback = () => {
   return (
@@ -84,6 +85,7 @@ function App() {
               <Route path="suppliers">
                 <Route index element={<Suppliers />} />
                 <Route path="add-suppliers" element={<AddSuppliers />} />
+                <Route path="edit/:id" element={<EditSuppliers />} />
                 <Route path="profile/:id" element={<SupplierDetails />} />
               </Route>
 

@@ -37,9 +37,10 @@ const createSupplierApi = (base64Credentials: string | null) => ({
 
   async updateSupplier(id: string, supplierData: FormData): Promise<Supplier> {
     if (!base64Credentials) throw new Error("Authentication required");
-    const { data } = await axios.put(`${BASE_URL}/${id}`, supplierData, {
+    const { data } = await axios.post(`${BASE_URL}/${id}`, supplierData, {
       headers: {
         Authorization: `Basic ${base64Credentials}`,
+        "Content-Type": "application/json",
       },
     });
     return data;

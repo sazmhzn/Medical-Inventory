@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = useCallback(() => {
     localStorage.removeItem("user");
+    console.log("in logout");
     queryClient.setQueryData(authKeys.user(), null);
     queryClient.clear();
     navigate("/login");

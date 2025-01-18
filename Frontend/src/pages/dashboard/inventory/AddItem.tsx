@@ -11,10 +11,14 @@ import { itemFields } from "@/config/ItemFields";
 import { useFetchCustomFormsByEntityType } from "@/services/CustomFormAPI";
 import { CustomField } from "types/customFields";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const AddItem = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
   const {
     data: customFormsData,
     loading,
@@ -125,6 +129,11 @@ const AddItem = () => {
 
       const response = await postInventoryItem(inventoryData);
       console.log("Item added successfully:", response);
+      toast({
+        title: "Item Edited Successful",
+        description: "Item edited successfully! Redirecting to...",
+      });
+      navigate("/admin/inventory");
       // Handle success (redirect or show message)
     } catch (err) {
       setError(

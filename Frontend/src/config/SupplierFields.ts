@@ -102,19 +102,15 @@ export const supplierFields: FieldConfig[] = [
     gridWidth: "full",
     section: "default",
   },
-  {
-    name: "document",
-    label: "Company Document",
-    type: "file",
-    required: false,
-    gridWidth: "full",
-    validation: {
-      acceptedFileTypes: [".pdf", ".doc", ".docx"],
-      maxFileSize: 5 * 1024 * 1024,
-      message: "Please upload a valid document (PDF, DOC, DOCX) under 5MB",
-    },
-    section: "other", // Added section
-  },
+  // {
+  //   name: "document",
+  //   label: "Company Document",
+  //   type: "file",
+  //   required: false,
+  //   gridWidth: "full",
+
+  //   section: "other", // Added section
+  // },
   {
     name: "password",
     label: "Password",

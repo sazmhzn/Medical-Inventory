@@ -72,7 +72,7 @@ export const useFetchSuppliers = () => {
 
 // Function to Fetch a User by ID
 export const useFetchUserById = async (id: string) => {
-  const [data, setData] = useState<UserDetails[]>([]);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -120,9 +120,9 @@ export const deleteUser = async (id: string) => {
 };
 
 // Function to Update a User
-export const updateUser = async (id: string, user: UserDetails) => {
+export const updateUser = async (id: string, user: Record<string, any>) => {
   try {
-    const response = await axiosInstance.put(`/${id}`, user);
+    const response = await axiosInstance.put(`/profile/${id}`, user);
     return response.data;
   } catch (error) {
     throw new Error(
@@ -130,7 +130,6 @@ export const updateUser = async (id: string, user: UserDetails) => {
     );
   }
 };
-
 
 export const useUsers = (token: string) => {
   const client = createApiClient(token);

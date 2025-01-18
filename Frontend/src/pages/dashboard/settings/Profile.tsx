@@ -1,24 +1,26 @@
 import { getCustomFields } from "@/lib/customFileManager";
-import { useFetchUserById } from "@/services/UserAPI";
 import { useNavigate } from "react-router-dom";
 import { BackHeader } from "../components/PageHeader";
-import CustomTooltip from "@/components/ToolTipAlert";
-import { CircleHelp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { itemFields } from "@/config/OrganizationField";
 import DynamicFormGenerator from "@/pages/test/__testDynamicForm";
+import { userFields } from "@/config/UserFields";
+import { useUpdateUser, useUser } from "@/services/__test_usersAPI";
+import { updateUser } from "@/services/UserAPI";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { data: itemDetails, loading, error } = useFetchUserById("1");
+  const user = localStorage.getItem("user");
+  const id = user ? JSON.parse(user).id : null;
+  const { data, isLoading, error } = useUser(id);
+  console.log(data);
 
   const customFields = getCustomFields("custom");
 
   const handleSubmit = async (data: Record<string, any>) => {
     console.log("clicked");
     try {
-      // const result = await updateInventoryItem(id, data);
-      console.log(data);
+      const result = await updateUser(id, data);
+      console.log(result);
       alert("Item added successfully!");
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -26,23 +28,7 @@ const Profile = () => {
     }
   };
 
-  const additionalContent = (
-    <div className="mt-4 p-4">
-      <h3 className="text-2xl font-medium">
-        Track Inventory for this item{" "}
-        <CustomTooltip
-          icon={<CircleHelp className="w-4 h-4" />}
-          content="Enable this option to track this item's stock based on its sales and purchase transactions."
-        />
-      </h3>
-      <p className="font-normal text-neutral-400">
-        You cannot enable/disable inventory tracking once you've created
-        transactions for this item
-      </p>
-    </div>
-  );
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="w-full p-6 space-y-6">
         <Skeleton className="h-8 w-64" />
@@ -59,7 +45,7 @@ const Profile = () => {
     );
   }
 
-  const fields = [...itemFields, ...customFields];
+  const fields = [...userFields, ...customFields];
   return (
     <div className="w-full">
       <div className="bg-background/95 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -70,10 +56,10 @@ const Profile = () => {
         <section>
           <DynamicFormGenerator
             fields={fields}
-            context="admin"
+            context="user"
             onSubmit={handleSubmit}
             title="Organization Profile"
-            initialValues={itemDetails} // Pass the fetched data as initial values
+            initialValues={data} // Pass the fetched data as initial values
           />
         </section>
       </div>

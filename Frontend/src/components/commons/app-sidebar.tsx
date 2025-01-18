@@ -4,15 +4,21 @@ import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useAuthState } from "@/utils/AuthProvider";
+import { Button } from "../ui/button";
+import { LogOut } from "lucide-react";
 
 export function AppSidebar({
   data,
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
+  const { logout } = useAuthState();
+
   return (
     <Sidebar {...props}>
       <SidebarHeader className="bg-white border-b border-gray-100 px-4 py-3">
@@ -28,6 +34,14 @@ export function AppSidebar({
           </div>
         </div>
       </SidebarContent>
+      <SidebarFooter>
+        <Button
+          onClick={logout}
+          className="w-full text-left text-red-500 hover:text-red-700"
+        >
+          <LogOut />
+        </Button>
+      </SidebarFooter>
       <SidebarRail className="hover:bg-gray-50" />
     </Sidebar>
   );

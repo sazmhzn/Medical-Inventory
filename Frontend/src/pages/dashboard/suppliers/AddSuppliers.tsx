@@ -9,15 +9,22 @@ import { useCreateSupplier } from "@/services/SupplierAPI";
 import { useFetchCustomFormsByEntityType } from "@/services/CustomFormAPI";
 import { CustomField } from "types/customFields";
 import { supplierFields } from "@/config/SupplierFields";
+import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const AddSuppliers = () => {
+  const navigate = useNavigate();
   const {
     data: customFormsData,
     loading,
     error: customFormsError,
   } = useFetchCustomFormsByEntityType("suppliers");
 
-  const { mutate: createSupplier, loading: isLoading, error } = useCreateSupplier();
+  const {
+    mutate: createSupplier,
+    loading: isLoading,
+    error,
+  } = useCreateSupplier();
 
   // Transform custom fields from backend to FieldConfig format
   const transformCustomFields = useCallback(
@@ -77,6 +84,12 @@ const AddSuppliers = () => {
         console.log(supplierData);
 
         createSupplier(supplierData);
+
+        toast({
+          title: "Supplier Added Successful",
+          description: "Supplier added successfully! Redirecting to...",
+        });
+        navigate("/admin/suppliers");
         console.log("Supplier added successfully");
         // Handle success (redirect or show message)
       } catch (err) {
