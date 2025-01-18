@@ -1,175 +1,287 @@
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState, useMemo } from "react";
 import { GenericTable } from "@/components/GenericTable";
-import { useEffect, useState, useMemo } from "react";
-import ReportFilter from "./ReportFilter";
-import ReportHeader from "./ReportHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { useCreateCustomReport, useReports } from "@/services/ReportAPI";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useReports } from "@/services/ReportAPI";
+import { Download, Filter } from "lucide-react";
+import { DateRangePicker } from "../../components/DateRangePicker";
 
-// Define proper TypeScript interfaces
-interface SaleItem {
-  itemId: number;
-  quantity: number;
-  price: number;
+// TypeScript interfaces
+interface PurchaseOrderItem {
+  "Item Name": string;
+  "Total Price": number;
+  Quantity: number;
+  "Price Per Unit": number;
 }
 
-interface SaleSummary {
-  saleId: number;
-  date: string;
-  customerName: string;
-  totalAmount: number;
-  items: SaleItem[];
-}
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  stock: number;
-  reorderLevel: number;
-  expiryDate: string;
-}
-
-interface ReportConfig {
-  header: string;
-  columns: Array<{
-    accessorKey: string;
-    header: string;
-  }>;
-  filters: string[];
+interface PurchaseOrder {
+  Status: "DELIVERED" | "SHIPPED" | "ACCEPTED";
+  "Supplier Name": string;
+  "Order ID": number;
+  "Supplier Organization": string;
+  "Supplier Contact": string;
+  "Order Date": string;
+  Items: PurchaseOrderItem[];
+  "Total Amount": number;
+  "Last Updated Date": string;
 }
 
 interface FilterState {
-  type: string;
-  value: string;
-  dateRange?: {
-    start: string;
-    end: string;
+  status: string;
+  supplier: string;
+  dateRange: {
+    start: Date | undefined;
+    end: Date | undefined;
   };
 }
 
-export default function GenericReportDisplay() {
-  const { reportType } = useParams<{ reportType: string }>();
+export default function PurchaseOrderReport() {
   const [filterState, setFilterState] = useState<FilterState>({
-    type: "item",
-    value: "",
+    status: "all",
+    supplier: "all",
+    dateRange: {
+      start: undefined,
+      end: undefined,
+    },
   });
-  const [error, setError] = useState<string | null>(null);
 
-  // Define report configurations
-  const reportConfig: Record<string, ReportConfig> = {
-    "sales-by-item": {
-      header: "Sales by Item",
-      columns: [
-        { accessorKey: "saleId", header: "Id" },
-        { accessorKey: "name", header: "Item Name" },
-        { accessorKey: "quantity", header: "Quantity Sold" },
-        { accessorKey: "totalSales", header: "Total Sales" },
-      ],
-      filters: ["dateRange", "itemCategory"],
+  const { data: reportData, isLoading } = useReports();
+
+  // Define columns for GenericTable
+  const columns = [
+    {
+      accessorKey: "Order ID",
+      header: "Order ID",
+      cell: (info: any) => `#${info.getValue()}`,
     },
-    "sales-by-customer": {
-      header: "Sales by Customer",
-      columns: [
-        { accessorKey: "id", header: "Id" },
-        { accessorKey: "customerName", header: "Customer Name" },
-        { accessorKey: "totalAmount", header: "Total Amount" },
-        { accessorKey: "date", header: "Last Purchase Date" },
-      ],
-      filters: ["dateRange", "customerRegion"],
+    {
+      accessorKey: "Status",
+      header: "Status",
+      cell: (info: any) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+            info.getValue()
+          )}`}
+        >
+          {info.getValue()}
+        </span>
+      ),
     },
-    "inventory-summary": {
-      header: "Inventory Summary",
-      columns: [
-        { accessorKey: "name", header: "Item Name" },
-        { accessorKey: "stock", header: "Stock" },
-        { accessorKey: "reorderLevel", header: "Reorder Level" },
-        { accessorKey: "expiryDate", header: "Expiry Date" },
-      ],
-      filters: ["stock", "expiryDate"],
+    {
+      accessorKey: "Supplier Organization",
+      header: "Supplier",
+      cell: (info: any) => (
+        <div>
+          <div className="font-medium">{info.getValue()}</div>
+          <div className="text-sm text-gray-500">
+            {info.row.original["Supplier Name"]}
+          </div>
+        </div>
+      ),
     },
+    {
+      accessorKey: "Order Date",
+      header: "Order Date",
+      cell: (info: any) => formatDate(info.getValue()),
+    },
+    {
+      accessorKey: "Items",
+      header: "Items",
+      cell: (info: any) => (
+        <div>
+          {info.getValue().map((item: PurchaseOrderItem, index: number) => (
+            <div key={index} className="text-sm">
+              {item["Item Name"]} ({item.Quantity}x)
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "Total Amount",
+      header: "Total Amount",
+      cell: (info: any) => formatCurrency(info.getValue()),
+    },
+    {
+      accessorKey: "Last Updated Date",
+      header: "Last Updated",
+      cell: (info: any) => formatDate(info.getValue()),
+    },
+  ];
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
-  // Memoize the current report configuration
-  const currentConfig = useMemo(() => {
-    return reportConfig[reportType || ""] || null;
-  }, [reportType]);
-
-  // Fetch report data using TanStack Query hooks
-  const {
-    data: reportData,
-    // isLoading,
-    isError,
-  } = useReports();
-
-  const handleFilterChange = (type: string, value: string) => {
-    setFilterState((prev) => ({
-      ...prev,
-      type,
-      value,
-    }));
+  // Format currency for display
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
   };
 
-  const handleDateRangeChange = (start: string, end: string) => {
-    setFilterState((prev) => ({
-      ...prev,
-      dateRange: { start, end },
-    }));
+  // Get status color
+  const getStatusColor = (status: PurchaseOrder["Status"]) => {
+    const colors = {
+      DELIVERED: "bg-green-100 text-green-800",
+      SHIPPED: "bg-blue-100 text-blue-800",
+      ACCEPTED: "bg-yellow-100 text-yellow-800",
+    };
+    return colors[status];
   };
 
-  const handleRunReport = () => {
-    // refetch({});
-  };
+  // Filter data based on current filter state
+  const filteredData = useMemo(() => {
+    if (!reportData) return [];
 
-  if (!currentConfig) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-red-500">
-            Invalid report type. Please select a valid report.
-          </p>
-        </CardContent>
-      </Card>
+    return (reportData as PurchaseOrder[]).filter((order) => {
+      const matchesStatus =
+        filterState.status === "all" || order.Status === filterState.status;
+      const matchesSupplier =
+        filterState.supplier === "all" ||
+        order["Supplier Organization"] === filterState.supplier;
+      const inDateRange =
+        !filterState.dateRange.start ||
+        !filterState.dateRange.end ||
+        (new Date(order["Order Date"]) >= filterState.dateRange.start &&
+          new Date(order["Order Date"]) <= filterState.dateRange.end);
+
+      return matchesStatus && matchesSupplier && inDateRange;
+    });
+  }, [reportData, filterState]);
+
+  // Get unique supplier organizations for filter
+  const supplierOptions = useMemo(() => {
+    if (!reportData) return [];
+    const suppliers = new Set(
+      (reportData as PurchaseOrder[]).map(
+        (order) => order["Supplier Organization"]
+      )
     );
-  }
+    return Array.from(suppliers);
+  }, [reportData]);
 
-  console.log(reportData);
+  // Export to CSV
+  const exportToCSV = () => {
+    if (!filteredData.length) return;
+
+    const headers = Object.keys(filteredData[0]).join(",");
+    const rows = filteredData.map((order) => {
+      const row = { ...order };
+      row.Items = JSON.stringify(order.Items); // Handle nested Items array
+      return Object.values(row).join(",");
+    });
+
+    const csv = [headers, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "purchase_orders_report.csv";
+    a.click();
+  };
 
   return (
     <div className="space-y-6 p-4">
-      <ReportHeader
-        reportName="Sales by Item"
-        category="Sales"
-        onExport={() => console.log("Exporting report")}
-        onCsvImport={(data) => console.log("Imported CSV Data:", data)}
-      />
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Purchase Orders Report</h1>
+        <Button
+          onClick={exportToCSV}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Export CSV
+        </Button>
+      </div>
 
+      {/* Filters */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-4">
+            <Select
+              value={filterState.status}
+              onValueChange={(value) =>
+                setFilterState((prev) => ({ ...prev, status: value }))
+              }
+            >
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="DELIVERED">Delivered</SelectItem>
+                <SelectItem value="SHIPPED">Shipped</SelectItem>
+                <SelectItem value="ACCEPTED">Accepted</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filterState.supplier}
+              onValueChange={(value) =>
+                setFilterState((prev) => ({ ...prev, supplier: value }))
+              }
+            >
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by Supplier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Suppliers</SelectItem>
+                {supplierOptions.map((supplier) => (
+                  <SelectItem key={supplier} value={supplier}>
+                    {supplier}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <DateRangePicker
+              from={filterState.dateRange.start}
+              to={filterState.dateRange.end}
+              onSelect={(range) =>
+                setFilterState((prev) => ({
+                  ...prev,
+                  dateRange: {
+                    start: range?.from,
+                    end: range?.to,
+                  },
+                }))
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Data Table */}
       <Card>
         <CardContent className="p-6">
-          <ReportFilter
-            filterType="dateRange"
-            filterValue=""
-            handleFilterTypeChange={(type) => console.log("Filter Type:", type)}
-            handleFilterValueChange={(value) =>
-              console.log("Filter Value:", value)
-            }
-            handleRunReport={() => console.log("Running Report...")}
-            availableFilters={["dateRange", "itemCategory", "customerRegion"]}
-            onDateRangeChange={(start, end) =>
-              console.log("Date Range:", start, end)
-            }
-          />
-
-          {/* {isLoading ? (
+          {isLoading ? (
             <div className="flex justify-center items-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
             </div>
-          ) : ( */}
-          <GenericTable
-            data={reportData || []}
-            context="report"
-            columns={currentConfig.columns}
-            viewMode="Table"
-          />
+          ) : (
+            <GenericTable
+              data={filteredData}
+              columns={columns}
+              searchField="supplierName"
+              context="report"
+              viewMode="Table"
+            />
+          )}
         </CardContent>
       </Card>
     </div>
