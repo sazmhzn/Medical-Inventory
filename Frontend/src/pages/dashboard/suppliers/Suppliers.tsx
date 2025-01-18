@@ -14,8 +14,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Supplier } from "types/types";
 import { useDeleteSupplier, useSuppliers } from "@/services/SupplierAPI";
 import { useToast } from "@/hooks/use-toast";
-import { handleExport } from "@/utils/ExportExcel";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ImportModal } from "../components/ImportModal";
+import { exportToExcel } from "@/lib/excel-utils";
+
 const columns: ColumnDef<Supplier>[] = [
   {
     id: "select",
@@ -90,28 +92,56 @@ const columns: ColumnDef<Supplier>[] = [
   },
 ];
 
+export interface ApiResponse {
+  message: string;
+  isSuccess: string; // API returns string "true" or "false"
+}
+
 const Suppliers = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { data: suppliers, isLoading, refetch } = useSuppliers(); // Using React Query hook
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const [viewMode, setViewMode] = useState<"Table" | "Card">("Table");
 
+  const handleApiResponse = (response: ApiResponse) => {
+    if (response.isSuccess === "true") {
+      toast({
+        title: "Success",
+        description: response.message,
+        variant: "success",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: response.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleImport = () => {
-    console.log("Import Suppliers clicked");
+    setIsImportModalOpen(true);
   };
 
   const handleExportSuppliers = () => {
-    const headers = ["ID", "Name", "Email", "Contact", "Address"];
-    const dataMapper = (supplier) => [
-      supplier.id,
-      supplier.name,
-      supplier.emailAddress,
-      supplier.contact,
-      supplier.address,
-    ];
+    if (!suppliers) return;
 
-    handleExport(suppliers, "suppliers", headers, dataMapper);
+    try {
+      exportToExcel(suppliers, "suppliers-export");
+      toast({
+        title: "Export Successful",
+        description: "Successfully exported suppliers to Excel",
+        variant: "success",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export suppliers to Excel",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleRefresh = () => {
@@ -162,7 +192,7 @@ const Suppliers = () => {
             {
               label: "Import Suppliers",
               icon: <UploadCloudIcon className="h-4 w-4" />,
-              // onClick: handleImport,
+              onClick: handleImport,
             },
             {
               label: "Export Suppliers",
@@ -180,6 +210,10 @@ const Suppliers = () => {
               onClick: handleRefresh,
             },
           ]}
+        />
+        <ImportModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
         />
         <section className="p-6 ">
           {isLoading ? (

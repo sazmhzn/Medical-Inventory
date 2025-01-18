@@ -134,20 +134,27 @@ export default function GenericReportDisplay() {
 
   return (
     <div className="space-y-6 p-4">
-      <ReportHeader reportName={currentConfig.header} />
+      <ReportHeader
+        reportName="Sales by Item"
+        category="Sales"
+        onExport={() => console.log("Exporting report")}
+        onCsvImport={(data) => console.log("Imported CSV Data:", data)}
+      />
 
       <Card>
         <CardContent className="p-6">
           <ReportFilter
-            filterType={filterState.type}
-            filterValue={filterState.value}
-            handleFilterTypeChange={(type) => handleFilterChange(type, "")}
+            filterType="dateRange"
+            filterValue=""
+            handleFilterTypeChange={(type) => console.log("Filter Type:", type)}
             handleFilterValueChange={(value) =>
-              handleFilterChange(filterState.type, value)
+              console.log("Filter Value:", value)
             }
-            handleRunReport={handleRunReport}
-            availableFilters={currentConfig.filters}
-            onDateRangeChange={handleDateRangeChange}
+            handleRunReport={() => console.log("Running Report...")}
+            availableFilters={["dateRange", "itemCategory", "customerRegion"]}
+            onDateRangeChange={(start, end) =>
+              console.log("Date Range:", start, end)
+            }
           />
 
           {/* {isLoading ? (

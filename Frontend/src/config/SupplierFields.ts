@@ -17,6 +17,17 @@ export const supplierFields: FieldConfig[] = [
     section: "default",
   },
   {
+    name: "orgName",
+    label: "Organization Name",
+    type: "text",
+    required: true,
+    validation: {
+      customValidation: z.string().min(1, "Supplier name is required"),
+    },
+    gridWidth: "full",
+    section: "default",
+  },
+  {
     name: "name",
     label: "Supplier Name",
     type: "text",
@@ -110,9 +121,6 @@ export const supplierFields: FieldConfig[] = [
     type: "text",
     required: true,
     gridWidth: "full",
-    validation: {
-      customValidation: z.string().email("Invalid email address"),
-    },
-    section: "other",
+    section: "default",
   },
 ];

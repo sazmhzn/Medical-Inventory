@@ -5,7 +5,7 @@ const ReportLayout = () => {
   return (
     <div className="w-full">
       {" "}
-      <HeaderTitle />
+      <HeaderTitle title="Report" />
       <Outlet />
     </div>
   );

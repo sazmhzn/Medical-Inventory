@@ -1,15 +1,14 @@
-// supplierAPI.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useAuthState } from "@/utils/AuthProvider";
 import { Supplier } from "types/types";
-import { z } from "zod";
 
 const BASE_URL = "http://localhost:8080/mis/user";
-const base64Credentials = btoa("admin:admin123");
 
-// API client
-const supplierApi = {
+// Create a factory function for the API that takes credentials
+const createSupplierApi = (base64Credentials: string | null) => ({
   async getAllSuppliers(): Promise<Supplier[]> {
+    if (!base64Credentials) throw new Error("Authentication required");
     const { data } = await axios.get(`${BASE_URL}/role/supplier`, {
       headers: { Authorization: `Basic ${base64Credentials}` },
     });
@@ -17,6 +16,7 @@ const supplierApi = {
   },
 
   async getSupplierById(id: string): Promise<Supplier> {
+    if (!base64Credentials) throw new Error("Authentication required");
     const { data } = await axios.get(`${BASE_URL}/${id}`, {
       headers: { Authorization: `Basic ${base64Credentials}` },
     });
@@ -24,15 +24,19 @@ const supplierApi = {
   },
 
   async createSupplier(supplierData: FormData): Promise<Supplier> {
-    const { data } = await axios.post(`${BASE_URL}/save`, supplierData, {
+    if (!base64Credentials) throw new Error("Authentication required");
+    console.log(supplierData);
+    const { data } = await axios.post(`${BASE_URL}/addSupplier`, supplierData, {
       headers: {
         Authorization: `Basic ${base64Credentials}`,
+        "Content-Type": "application/json",
       },
     });
     return data;
   },
 
   async updateSupplier(id: string, supplierData: FormData): Promise<Supplier> {
+    if (!base64Credentials) throw new Error("Authentication required");
     const { data } = await axios.put(`${BASE_URL}/${id}`, supplierData, {
       headers: {
         Authorization: `Basic ${base64Credentials}`,
@@ -42,10 +46,22 @@ const supplierApi = {
   },
 
   async deleteSupplier(id: string): Promise<void> {
+    if (!base64Credentials) throw new Error("Authentication required");
     await axios.delete(`${BASE_URL}/${id}`, {
       headers: { Authorization: `Basic ${base64Credentials}` },
     });
   },
+});
+
+// Custom hook to use the supplier API with auth
+const useSupplierApi = () => {
+  const { getCredentials, isAuthenticated } = useAuthState();
+
+  if (!isAuthenticated) {
+    throw new Error("Authentication required to use supplier API");
+  }
+
+  return createSupplierApi(getCredentials());
 };
 
 // Query keys
@@ -59,6 +75,8 @@ export const supplierKeys = {
 
 // React Query Hooks
 export const useSuppliers = (enabled = true) => {
+  const supplierApi = useSupplierApi();
+
   return useQuery({
     queryKey: supplierKeys.lists(),
     queryFn: () => supplierApi.getAllSuppliers(),
@@ -69,6 +87,8 @@ export const useSuppliers = (enabled = true) => {
 };
 
 export const useSupplier = (id: string | undefined, enabled = true) => {
+  const supplierApi = useSupplierApi();
+
   return useQuery({
     queryKey: supplierKeys.detail(id!),
     queryFn: () => supplierApi.getSupplierById(id!),
@@ -78,6 +98,7 @@ export const useSupplier = (id: string | undefined, enabled = true) => {
 
 export const useCreateSupplier = () => {
   const queryClient = useQueryClient();
+  const supplierApi = useSupplierApi();
 
   return useMutation({
     mutationFn: (data: FormData) => supplierApi.createSupplier(data),
@@ -89,6 +110,7 @@ export const useCreateSupplier = () => {
 
 export const useUpdateSupplier = () => {
   const queryClient = useQueryClient();
+  const supplierApi = useSupplierApi();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: FormData }) =>
@@ -102,6 +124,7 @@ export const useUpdateSupplier = () => {
 
 export const useDeleteSupplier = () => {
   const queryClient = useQueryClient();
+  const supplierApi = useSupplierApi();
 
   return useMutation({
     mutationFn: (id: string) => supplierApi.deleteSupplier(id),
@@ -109,4 +132,19 @@ export const useDeleteSupplier = () => {
       queryClient.invalidateQueries({ queryKey: supplierKeys.lists() });
     },
   });
+};
+
+// Test function for the supplier API
+export const testSupplierApi = async (username: string, password: string) => {
+  const testCredentials = btoa(`${username}:${password}`);
+  const api = createSupplierApi(testCredentials);
+
+  try {
+    const suppliers = await api.getAllSuppliers();
+    console.log("Test successful:", suppliers);
+    return true;
+  } catch (error) {
+    console.error("Test failed:", error);
+    return false;
+  }
 };

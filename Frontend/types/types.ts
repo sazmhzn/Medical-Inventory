@@ -41,14 +41,23 @@ export interface Order {
 
 export interface Supplier {
   id: number;
+  username: string;
+  password: string;
+  roles: string;
+  orgName: string;
+  image: string;
   name: string;
+  emailAddress: string;
   contact: string;
   address: string;
+  createdDate: string;
+  lastUpdatedDate: string;
 }
 
 export interface UserDetails {
   id: number;
   username: string;
+  password: string;
   roles: string;
   orgName: string;
   image: string;
@@ -76,9 +85,9 @@ export interface OtpRequest {
 export interface RegisterCredentials {
   username: string;
   password: string;
-  confirmPassword: string;
+  address: string;
   name: string;
-  orgName: string;
+  orgName?: string;
   contact?: string;
   emailAddress: string;
   role: UserRole;

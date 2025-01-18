@@ -260,12 +260,13 @@ export function ItemDetails() {
                   </Card>
 
                   {/* Details Grid */}
+
                   <Card>
                     <CardHeader>
                       <CardTitle>Product Information</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid lg:grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-muted-foreground">SKU</p>
                           <p className="font-medium">{itemDetails.sku}</p>
@@ -297,7 +298,7 @@ export function ItemDetails() {
                       <CardTitle>Additional Details</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid lg:grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-muted-foreground">
                             Manufacturer
@@ -307,7 +308,7 @@ export function ItemDetails() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className=" text-sm text-muted-foreground">
                             Storage Conditions
                           </p>
                           <p className="font-medium">
@@ -337,73 +338,8 @@ export function ItemDetails() {
                       </div>
                     </CardContent>
                   </Card>
-                  {/* Left Column */}
-                  {/* <div className="space-y-3">
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">SKU:</span>
-                      <span>{itemDetails.sku}</span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Unit:</span>
-                      <span>{itemDetails.unit}</span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Type:</span>
-                      <span className="capitalize">{itemDetails.type}</span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Stock:</span>
-                      <span>{itemDetails.stock} units</span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Price:</span>
-                      <span>${itemDetails.price}</span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Reorder Level:</span>
-                      <span>{itemDetails.reorder}</span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Expiry Date:</span>
-                      <span>{itemDetails.expiryDate}</span>
-                    </div>
-                  </div> */}
-                  {/* Right Column */}
-                  {/* <div className="space-y-3">
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Manufacturer:</span>
-                      <span>{itemDetails.manufacturer}</span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Batch Number:</span>
-                      <span>{itemDetails.batchNumber}</span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Category:</span>
-                      <span>{itemDetails.category}</span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Storage:</span>
-                      <span>
-                        {itemDetails.storageConditions || "Not specified"}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Created:</span>
-                      <span>
-                        {new Date(itemDetails.createdDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="font-medium">Last Updated:</span>
-                      <span>
-                        {new Date(
-                          itemDetails.lastUpdatedDate
-                        ).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div> */}
                 </div>
+                <InventoryStockChart itemDetails={itemDetails} />
               </CardContent>
             </Card>
 
@@ -425,8 +361,6 @@ export function ItemDetails() {
                 </CardContent>
               </Card>
             )} */}
-
-            <InventoryStockChart itemDetails={itemDetails} />
           </>
         ) : (
           <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">

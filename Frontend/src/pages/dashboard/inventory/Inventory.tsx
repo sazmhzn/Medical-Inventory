@@ -23,23 +23,15 @@ import { ColumnDef } from "@tanstack/react-table";
 import {
   DownloadCloudIcon,
   EllipsisVertical,
-  LayoutGridIcon,
-  List,
-  PlusIcon,
   RefreshCwIcon,
   SettingsIcon,
-  Table,
   Upload,
   UploadCloudIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  deleteInventoryItem,
-  useFetchInventory,
-} from "@/services/InventoryAPI";
+
 import { PageHeader } from "../components/PageHeader";
-import EditItem from "./components/EditItem";
 import { toast } from "@/hooks/use-toast";
 import {
   useDeleteInventoryItem,
@@ -52,6 +44,7 @@ import {
   TableHead,
   TableBody,
   TableCell,
+  Table,
 } from "@/components/ui/table";
 import { handleExport } from "@/utils/ExportExcel";
 
@@ -336,12 +329,14 @@ const Inventory = () => {
     error,
     refetch,
   } = useInventory();
+
   const deleteMutation = useDeleteInventoryItem();
 
   const [viewMode, setViewMode] = useState<"Table" | "Card">("Table");
   const [localInventory, setLocalInventory] = useState<InventoryItem[]>([]);
 
   useEffect(() => {
+    console.log(inventory);
     if (inventory) {
       const processedData = inventory.map((item: InventoryItem) => ({
         ...item,
@@ -353,6 +348,8 @@ const Inventory = () => {
             : "good",
       }));
       setLocalInventory(processedData);
+      console.log(inventory);
+      console.log(localInventory);
     }
   }, [inventory]);
 
@@ -527,7 +524,7 @@ export default Inventory;
 
 export const InventoryTableSkeleton = () => {
   // Generate 5 skeleton rows by default
-  const skeletonRows = Array.from({ length: 5 }, (_, index) => index);
+  const skeletonRows = Array.from({ length: 2 }, (_, index) => index);
 
   return (
     <div className="rounded-md border">
@@ -540,48 +537,6 @@ export const InventoryTableSkeleton = () => {
             <TableHead>
               <Skeleton className="h-4 w-[60px]" />
             </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[100px]" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[50px]" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[60px]" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[70px]" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[60px]" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[70px]" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[50px]" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[90px]" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[100px]" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[80px]" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[80px]" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[120px]" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-[100px]" />
-            </TableHead>
-            <TableHead className="w-[50px]">
-              <Skeleton className="h-4 w-4" />
-            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -592,48 +547,6 @@ export const InventoryTableSkeleton = () => {
               </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-[60px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-[100px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-8 w-8 rounded-full" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-[60px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-[70px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-[60px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-[70px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-[50px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-[90px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-[100px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-[80px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-[80px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-[120px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-[100px]" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-8 w-8" />
               </TableCell>
             </TableRow>
           ))}

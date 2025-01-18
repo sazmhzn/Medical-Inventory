@@ -17,6 +17,7 @@ const authApi = {
     } else {
       const { data } = await axios.post(`${BASE_URL}/verify-otp`, {
         email: credentials.email,
+        password: credentials.password,
         otp: credentials.otp,
         role: credentials.role,
       });
@@ -26,7 +27,7 @@ const authApi = {
 
   async register(userData: RegisterCredentials) {
     const { data } = await axios.post(`${BASE_URL}/register`, userData);
-    return data;
+    return { ...data, userData };
   },
 
   async sendOtp(request: OtpRequest) {
@@ -61,6 +62,7 @@ export const useAuth = () => {
   const registerMutation = useMutation({
     mutationFn: (userData: RegisterCredentials) => authApi.register(userData),
     onSuccess: (user) => {
+      user.bota = btoa(`${user.username}:${user.userData.password}`);
       localStorage.setItem("user", JSON.stringify(user));
       queryClient.setQueryData(authKeys.user(), user);
     },

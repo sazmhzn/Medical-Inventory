@@ -100,12 +100,22 @@ const Report = () => {
   const [orientation, setOrientation] = useState("Portrait");
 
   const handleSave = (config) => {
-    // Handle saved configuration
-    console.log(config);
+    console.log({
+      selectedFields,
+      tableDesign,
+      orientation,
+    });
+    setDialogOpen(false);
   };
 
   const handleFieldChange = (field: keyof SelectedFields) => {
-    setSelectedFields((prev) => ({ ...prev, [field]: !prev[field] }));
+    console.log(field);
+    setSelectedFields((prev) => {
+      return {
+        ...prev,
+        [field]: !prev[field],
+      };
+    });
   };
 
   const renderReportCategory = (category: (typeof REPORT_CATEGORIES)[0]) => (
@@ -204,49 +214,26 @@ const Report = () => {
                                 Choose Details to Display
                               </h2>
                               <div className="flex flex-col gap-2">
-                                <div className="flex items-center space-x-2">
-                                  <Checkbox
-                                    id="Organization Name"
-                                    checked={selectedFields.orgName}
-                                    onChange={() =>
-                                      handleFieldChange("orgName")
-                                    }
-                                  />
-                                  <label
-                                    htmlFor="Organization Name"
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                {Object.keys(selectedFields).map((field) => (
+                                  <div
+                                    key={field}
+                                    className="flex items-center space-x-2"
                                   >
-                                    Organization Name
-                                  </label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <Checkbox
-                                    id="Page Number"
-                                    checked={selectedFields.pageNo}
-                                    onChange={() => handleFieldChange("pageNo")}
-                                  />
-                                  <label
-                                    htmlFor="Page Number"
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                  >
-                                    Page Number
-                                  </label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <Checkbox
-                                    id="Generated Date"
-                                    checked={selectedFields.generatedDate}
-                                    onChange={() =>
-                                      handleFieldChange("generatedDate")
-                                    }
-                                  />
-                                  <label
-                                    htmlFor="Generated Date"
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                  >
-                                    Generated Date
-                                  </label>
-                                </div>
+                                    <Checkbox
+                                      id={field}
+                                      checked={selectedFields[field]}
+                                      onCheckedChange={() =>
+                                        handleFieldChange(field)
+                                      }
+                                    />
+                                    <label
+                                      htmlFor={field}
+                                      className="text-sm font-medium"
+                                    >
+                                      {field.replace(/([A-Z])/g, " $1")}
+                                    </label>
+                                  </div>
+                                ))}
                               </div>
                             </div>
 

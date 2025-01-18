@@ -1,54 +1,3 @@
-// import { Filter } from "lucide-react";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
-// import { Button } from "@/components/ui/button";
-
-// interface ReportFilterProps {
-//   filter: string;
-//   handleFilterChange: (value: string) => void;
-// }
-
-// const ReportFilter = ({ handleFilterChange, filter }: ReportFilterProps) => {
-//   return (
-//     <div>
-//       {/* Filters Section */}
-//       <div className="mb-6 p-4 bg-gray-50 rounded-lg flex items-center gap-4">
-//         <label
-//           htmlFor="filter"
-//           className="mb-2 flex items-center gap-2 text-gray-700 font-medium"
-//         >
-//           <Filter className="stroke-1 w-4 h-4" /> Filters:
-//         </label>
-//         <Select onValueChange={handleFilterChange} value={filter}>
-//           <SelectTrigger className="w-[180px]">
-//             <SelectValue placeholder="Select" />
-//             {/* <SelectValue>{filter}</SelectValue> */}
-//           </SelectTrigger>
-//           <SelectContent>
-//             <SelectItem value="item">Item</SelectItem>
-//             <SelectItem value="customer">Customer</SelectItem>
-//             <SelectItem value="system">System</SelectItem>
-//           </SelectContent>
-//         </Select>
-
-//         <Button
-//           // onClick={handleRunReport}
-//           className=" md:w-auto px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300"
-//         >
-//           Run Report
-//         </Button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default ReportFilter;
-
 import { Filter } from "lucide-react";
 import {
   Select,
@@ -58,8 +7,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { DatePickerWithRange } from "./DatePickerWithRange";
 
 interface ReportFilterProps {
@@ -81,45 +30,46 @@ const ReportFilter = ({
   availableFilters,
   onDateRangeChange,
 }: ReportFilterProps) => {
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [dateRange, setDateRange] = useState<{
+    start: Date | null;
+    end: Date | null;
+  }>({
+    start: null,
+    end: null,
+  });
 
   const handleDateChange = (start: Date | null, end: Date | null) => {
-    setStartDate(start);
-    setEndDate(end);
+    setDateRange({ start, end });
     if (start && end) {
       onDateRangeChange(start.toISOString(), end.toISOString());
     }
   };
+
   return (
     <div className="space-y-4">
-      <div className="flex gap-4">
-        <Select value={filterType} onValueChange={handleFilterTypeChange}>
-          {availableFilters.map((filter) => (
-            <option key={filter} value={filter}>
-              {filter.charAt(0).toUpperCase() + filter.slice(1)}
-            </option>
-          ))}
-        </Select>
-        <Select value={filterType} onValueChange={handleFilterTypeChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select" />
-            {/* <SelectValue>{filter}</SelectValue> */}
-          </SelectTrigger>
-          <SelectContent>
-            {availableFilters.map((filter) => (
-              <SelectItem key={filter} value={filter}>
-                {filter.charAt(0).toUpperCase() + filter.slice(1)}
-              </SelectItem>
-            ))}
-            <SelectItem value="item">Item</SelectItem>
-            <SelectItem value="customer">Customer</SelectItem>
-            <SelectItem value="system">System</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="flex items-center gap-4">
+        {/* Filter Type Selector */}
+        <div className="w-48">
+          <Select value={filterType} onValueChange={handleFilterTypeChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Filter Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableFilters.map((filter) => (
+                <SelectItem key={filter} value={filter}>
+                  {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
+        {/* Dynamic Input or Date Range Picker */}
         {filterType === "dateRange" ? (
-          <DatePickerWithRange className="w-auto" />
+          <DatePickerWithRange
+            value={dateRange}
+            onChange={({ start, end }) => handleDateChange(start, end)}
+          />
         ) : (
           <Input
             type="text"
@@ -130,6 +80,7 @@ const ReportFilter = ({
           />
         )}
 
+        {/* Run Report Button */}
         <Button
           onClick={handleRunReport}
           className="bg-primary text-primary-foreground hover:bg-primary/90"

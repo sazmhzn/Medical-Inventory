@@ -190,7 +190,7 @@ const DashboardLayout = () => {
   return (
     <div className="flex min-h-screen">
       <SidebarProvider
-        className="grid sm:grid-cols-[auto_1fr]"
+        className="grid md:grid-cols-[auto_1fr]"
         defaultOpen={!isReportsPage}
         open={isSidebarOpen}
         onOpenChange={setIsSidebarOpen}
@@ -200,7 +200,7 @@ const DashboardLayout = () => {
           collapsible={isReportsPage ? "icon" : "offcanvas"}
           className="border-r border-gray-200"
         />
-        <main className="w-full overflow-auto">
+        <main className="w-full  overflow-auto">
           <Outlet />
         </main>
       </SidebarProvider>

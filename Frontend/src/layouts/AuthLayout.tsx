@@ -38,13 +38,14 @@ const AuthLayout = () => {
   // Example usage for protected content
 
   const handleRegister = async (formData) => {
+    console.log(formData);
     try {
       await registerMutation.mutateAsync({
         emailAddress: formData.emailAddress,
         username: formData.username,
         address: formData.address,
         password: formData.password,
-        confirmPassword: formData.confirmPassword,
+        // confirmPassword: formData.confirmPassword,
         name: formData.fullName,
         role: formData.role,
         orgName: formData.companyName,

@@ -64,7 +64,7 @@ const createInventoryApi = (base64Credentials: string | null) => ({
 // Custom hook to use the inventory API with auth
 const useInventoryApi = () => {
   const { getCredentials, isAuthenticated } = useAuthState();
-
+  console.log(getCredentials());
   if (!isAuthenticated) {
     throw new Error("Authentication required to use inventory API");
   }

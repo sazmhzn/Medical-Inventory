@@ -29,6 +29,7 @@ interface RegistrationFormData {
   emailAddress: string;
   username: string;
   password: string;
+  contact?: string;
   confirmPassword: string;
   address: string;
   fullName: string;
@@ -93,6 +94,7 @@ const AuthPage = ({ onLogin, onRegister, onSendOtp }: AuthPageProps) => {
     username: "",
     password: "",
     address: "",
+    contact: "",
     confirmPassword: "",
     fullName: "",
     role: UserRole.CUSTOMER,
@@ -131,6 +133,13 @@ const AuthPage = ({ onLogin, onRegister, onSendOtp }: AuthPageProps) => {
 
   const handleSendOtp = async () => {
     if (!validateEmail(loginData.email)) return;
+
+    setLoginData((prev) => {
+      return {
+        ...prev,
+        authMethod: "otp",
+      };
+    });
 
     setIsLoading(true);
     try {
@@ -277,6 +286,7 @@ const AuthPage = ({ onLogin, onRegister, onSendOtp }: AuthPageProps) => {
                 <p className="text-sm text-red-500">{errors.fullName}</p>
               )}
             </div>
+
             <div className="space-y-2">
               <label className="block text-sm font-medium">Username</label>
               <Input
@@ -290,6 +300,24 @@ const AuthPage = ({ onLogin, onRegister, onSendOtp }: AuthPageProps) => {
                 <p className="text-sm text-red-500">{errors.username}</p>
               )}
             </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">Company Name</label>
+              <Input
+                value={registerData.companyName}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    companyName: e.target.value,
+                  })
+                }
+                className={errors.fullName ? "border-red-500" : ""}
+              />
+              {errors.companyName && (
+                <p className="text-sm text-red-500">{errors.companyName}</p>
+              )}
+            </div>
+
             <div className="space-y-2">
               <label className="block text-sm font-medium">Address</label>
               <Input

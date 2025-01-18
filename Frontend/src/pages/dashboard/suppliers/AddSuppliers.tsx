@@ -17,7 +17,7 @@ const AddSuppliers = () => {
     error: customFormsError,
   } = useFetchCustomFormsByEntityType("suppliers");
 
-  const { mutate: createSupplier, isLoading, error } = useCreateSupplier();
+  const { mutate: createSupplier, loading: isLoading, error } = useCreateSupplier();
 
   // Transform custom fields from backend to FieldConfig format
   const transformCustomFields = useCallback(
@@ -42,8 +42,6 @@ const AddSuppliers = () => {
     const customFields = transformCustomFields(customFormsData);
     return [...supplierFields, ...customFields];
   }, [customFormsData, transformCustomFields]);
-
-  console.log([allFields]);
 
   const handleSubmit = useCallback(
     async (data: Record<string, any>) => {
@@ -75,6 +73,8 @@ const AddSuppliers = () => {
           // Convert base64 image if present
           image: data.image || null,
         };
+
+        console.log(supplierData);
 
         createSupplier(supplierData);
         console.log("Supplier added successfully");
