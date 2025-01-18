@@ -82,8 +82,17 @@ const AddSalesOrders = () => {
         }
       });
 
+      // Retrieve user data from localStorage
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
+
+      // Extract relevant fields from userData
+      const { id: customerId, name: customerName, orgName } = userData || {};
+
       const orderData = {
         supplierId: selectedSupplier,
+        customerId,
+        customerName,
+        orgName,
         orderDate: formData.salesOrderDate,
         expectedDate: formData.shipmentDate,
         status: "PENDING",

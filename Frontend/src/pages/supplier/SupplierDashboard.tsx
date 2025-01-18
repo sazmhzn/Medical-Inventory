@@ -13,6 +13,7 @@ import {
   Package,
   AlertTriangle,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import {
   useOrders,
@@ -20,6 +21,21 @@ import {
   useUpdateOrderStatus,
 } from "@/services/OrderAPI";
 import { GenericTable } from "@/components/GenericTable";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const orderColumns: ColumnDef[] = [
   {
@@ -38,7 +54,23 @@ const orderColumns: ColumnDef[] = [
           {status === "REJECTED" && (
             <XCircle className="w-4 h-4 text-red-500" />
           )}
-          {status}
+          {status === "SHIPPED" && (
+            <Package className="w-4 h-4 text-blue-500" />
+          )}
+          {status === "DELIVERED" && (
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+          )}
+          <span
+            className={`
+            ${status === "PENDING" ? "text-yellow-700" : ""}
+            ${status === "ACCEPTED" ? "text-green-700" : ""}
+            ${status === "REJECTED" ? "text-red-700" : ""}
+            ${status === "SHIPPED" ? "text-blue-700" : ""}
+            ${status === "DELIVERED" ? "text-emerald-700" : ""}
+          `}
+          >
+            {status}
+          </span>
         </div>
       );
     },
@@ -46,6 +78,57 @@ const orderColumns: ColumnDef[] = [
   {
     accessorKey: "id",
     header: "Order ID",
+  },
+
+  {
+    accessorKey: "customerName",
+    header: "Customer",
+  },
+  {
+    accessorKey: "items",
+    header: "Items Detail",
+    cell: ({ row }) => {
+      const items = row.getValue("items") as Array<{
+        itemName: string;
+        quantity: number;
+      }>;
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className="text-left">
+              <div>
+                <span className="font-medium">{items.length} items</span>
+                <span className="text-gray-500 block text-sm">
+                  Total Qty:{" "}
+                  {items.reduce((acc, item) => acc + item.quantity, 0)}
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <ul className="list-disc pl-4">
+                {items.map((item, index) => (
+                  <li key={index}>
+                    {item.itemName} (Qty: {item.quantity})
+                  </li>
+                ))}
+              </ul>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    },
+  },
+  {
+    accessorKey: "totalAmount",
+    header: "Total Amount",
+    cell: ({ row }) => {
+      const amount = row.getValue("totalAmount");
+      const formattedAmount = new Intl.NumberFormat("ne-NP", {
+        style: "currency",
+        currency: "NPR",
+      }).format(amount);
+      return formattedAmount;
+    },
   },
   {
     accessorKey: "orderDate",
@@ -56,100 +139,127 @@ const orderColumns: ColumnDef[] = [
     },
   },
   {
-    accessorKey: "supplierId",
-    header: "Supplier ID",
-    cell: ({ row }) => {
-      const date = new Date(row.getValue("orderDate"));
-      return date.toLocaleDateString();
-    },
-  },
-  // {
-  //   accessorKey: "items",
-  //   header: "Items",
-  //   cell: ({ row }) => {
-  //     const items = row.getValue("items");
-  //     return items.length;
-  //   },
-  // },
-  {
-    accessorKey: "totalAmount",
-    header: "Total Amount",
-    cell: ({ row }) => {
-      const amount = row.getValue("totalAmount");
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount);
-    },
-  },
-];
-
-const pendingOrderColumns: ColumnDef[] = [
-  ...orderColumns,
-  {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
       const order = row.original;
       const updateOrderStatus = useUpdateOrderStatus();
       const { toast } = useToast();
+      const [isUpdating, setIsUpdating] = useState(false);
 
       const handleStatusUpdate = async (status: string) => {
+        setIsUpdating(true);
         try {
-          await updateOrderStatus.mutateAsync({ orderId: order.id, status });
+          await updateOrderStatus.mutateAsync({
+            orderId: order.id,
+            status,
+            updateInventory: status === "DELIVERED",
+          });
           toast({
-            title: "Success",
-            description: `Order ${status.toLowerCase()} successfully`,
+            title: "Order Updated Successfully",
+            description: `Order #${order.id} has been ${status.toLowerCase()}`,
+            variant: "success",
           });
         } catch (error) {
           toast({
-            title: "Error",
-            description: `Failed to ${status.toLowerCase()} order`,
+            title: "Update Failed",
+            description:
+              "Please try again or contact support if the issue persists",
             variant: "destructive",
           });
+        } finally {
+          setIsUpdating(false);
         }
       };
 
       return (
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-green-600 hover:text-green-700"
-            onClick={() => handleStatusUpdate("ACCEPTED")}
-          >
-            <CheckCircle2 className="w-4 h-4 mr-1" />
-            Accept
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-red-600 hover:text-red-700"
-            onClick={() => handleStatusUpdate("REJECTED")}
-          >
-            <XCircle className="w-4 h-4 mr-1" />
-            Reject
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <DotsHorizontalIcon className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+            {/* Status Update Options */}
+            {order.status === "PENDING" && (
+              <>
+                <DropdownMenuItem
+                  onClick={() => handleStatusUpdate("ACCEPTED")}
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
+                  Accept Order
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleStatusUpdate("REJECTED")}
+                >
+                  <XCircle className="w-4 h-4 mr-2 text-red-500" />
+                  Reject Order
+                </DropdownMenuItem>
+              </>
+            )}
+
+            {order.status === "ACCEPTED" && (
+              <DropdownMenuItem onClick={() => handleStatusUpdate("SHIPPED")}>
+                <Package className="w-4 h-4 mr-2 text-blue-500" />
+                Mark as Shipped
+              </DropdownMenuItem>
+            )}
+
+            {order.status === "SHIPPED" && (
+              <DropdownMenuItem onClick={() => handleStatusUpdate("DELIVERED")}>
+                <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" />
+                Mark as Delivered
+              </DropdownMenuItem>
+            )}
+
+            <DropdownMenuSeparator />
+
+            {/* Order Management Options */}
+            <DropdownMenuItem
+              onClick={() => navigator.clipboard.writeText(order.id)}
+            >
+              Copy Order ID
+            </DropdownMenuItem>
+
+            <Link
+              to={`/admin/orders/${order.id}`}
+              className="inline-flex items-center justify-between w-full rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            >
+              View Details
+            </Link>
+
+            {order.status !== "DELIVERED" && order.status !== "REJECTED" && (
+              <Link
+                to={`/admin/orders/${order.id}/edit`}
+                className="inline-flex items-center justify-between w-full rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+              >
+                Edit Order
+              </Link>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       );
     },
   },
-  {
-    id: "supplierName",
-    header: "Supplier",
-    accessorKey: "supplierName",
-  },
 ];
+
+const pendingOrderColumns: ColumnDef[] = [...orderColumns];
 
 const SupplierDashboard = () => {
   const { toast } = useToast();
   const { data: orders, isLoading: ordersLoading } = useOrders();
-  const { data: pendingOrdersResponse, isLoading: pendingLoading } =
-    usePendingOrders();
+  const { data: pendingOrders, isLoading: pendingLoading } = usePendingOrders();
   const [selectedTab, setSelectedTab] = useState("all");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Extract pending orders from the response
-  const pendingOrders = pendingOrdersResponse || [];
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    // Add your refresh logic here
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -163,16 +273,23 @@ const SupplierDashboard = () => {
               Manage your orders and inventory
             </p>
           </div>
-          <Button asChild>
-            <Link to="/admin/inventory">
-              <Package className="w-4 h-4 mr-2" />
-              Manage Inventory
-            </Link>
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="gap-2"
+          >
+            {isRefreshing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Package className="w-4 h-4" />
+            )}
+            Refresh Data
           </Button>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6 flex items-center gap-4">
+          <Card className="p-6 shadow-none hover:shadow-md transition-shadow duration-200 flex items-center gap-4">
             <div className="p-3 bg-blue-100 rounded-full">
               <Package className="w-6 h-6 text-blue-600" />
             </div>
@@ -182,24 +299,26 @@ const SupplierDashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6 flex items-center gap-4">
+          <Card className="p-6 shadow-none hover:shadow-md transition-shadow duration-200 flex items-center gap-4">
             <div className="p-3 bg-yellow-100 rounded-full">
               <Clock className="w-6 h-6 text-yellow-600" />
             </div>
             <div>
               <p className="text-gray-600">Pending Orders</p>
-              <p className="text-2xl font-bold">{pendingOrders?.length || 0}</p>
+              <p className="text-2xl font-bold">
+                {pendingOrders?.data?.length || 0}
+              </p>
             </div>
           </Card>
 
-          <Card className="p-6 flex items-center gap-4">
+          <Card className="p-6 shadow-none hover:shadow-md transition-shadow duration-200 flex items-center gap-4">
             <div className="p-3 bg-red-100 rounded-full">
               <AlertTriangle className="w-6 h-6 text-red-600" />
             </div>
             <div>
               <p className="text-gray-600">Requires Attention</p>
               <p className="text-2xl font-bold">
-                {pendingOrders.map(
+                {pendingOrders?.data?.map(
                   (order) =>
                     order.status === "PENDING" &&
                     new Date(order.orderDate) <
@@ -247,7 +366,9 @@ const SupplierDashboard = () => {
                     data={orders.data || []}
                     columns={orderColumns}
                     context="orders"
-                    searchField="supplierId"
+                    detailsPath="details"
+                    role="supplier"
+                    searchField="customerName"
                   />
                 )
               ) : pendingLoading ? (
@@ -257,10 +378,12 @@ const SupplierDashboard = () => {
               ) : (
                 <GenericTable
                   viewMode="Table"
-                  data={pendingOrdersResponse || []}
+                  data={pendingOrders?.data || []}
                   columns={pendingOrderColumns}
-                  context="pending-orders"
-                  searchField="supplierName"
+                  context="profile"
+                  role="supplier"
+                  detailsPath="pending-orders"
+                  searchField="customerName"
                 />
               )}
             </div>

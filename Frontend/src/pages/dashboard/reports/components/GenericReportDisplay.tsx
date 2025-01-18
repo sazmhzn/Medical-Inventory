@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import ReportFilter from "./ReportFilter";
 import ReportHeader from "./ReportHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { useCreateCustomReport } from "@/services/ReportAPI";
+import { useCreateCustomReport, useReports } from "@/services/ReportAPI";
 
 // Define proper TypeScript interfaces
 interface SaleItem {
@@ -99,7 +99,7 @@ export default function GenericReportDisplay() {
     data: reportData,
     // isLoading,
     isError,
-  } = useCreateCustomReport();
+  } = useReports();
 
   const handleFilterChange = (type: string, value: string) => {
     setFilterState((prev) => ({
@@ -131,6 +131,8 @@ export default function GenericReportDisplay() {
       </Card>
     );
   }
+
+  console.log(reportData);
 
   return (
     <div className="space-y-6 p-4">

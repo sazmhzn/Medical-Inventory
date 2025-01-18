@@ -175,13 +175,16 @@ function App() {
             <Route
               path="/supplier"
               element={
-                <ProtectedRoute allowedRoles={["ROLE_SUPPLIER"]}>
+                <ProtectedRoute
+                  allowedRoles={["SUPPLIER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"]}
+                >
                   <SupplierDashboardLayout />
                 </ProtectedRoute>
               }
             >
               {/* <Route index element={<SupplierDashboardLayout />} /> */}
               <Route index element={<SupplierDashboard />} />
+              <Route path="orders/details/:id" element={<OrderDetails />} />
               <Route path="profile/:id" element={<SupplierDetails />} />
             </Route>
 

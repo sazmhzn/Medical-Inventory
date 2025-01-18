@@ -10,7 +10,7 @@ const NoPage = () => {
       />
 
       <Button className="whitespace-nowrap rounded-lg bg-slate-900 px-4 py-2 font-medium text-white shadow-xl transition-colors hover:bg-slate-700">
-        <Link to={"/admin"}>Back to home</Link>
+        <Link to={"/"}>Back to home</Link>
       </Button>
     </div>
   );

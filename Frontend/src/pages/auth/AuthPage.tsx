@@ -13,8 +13,8 @@ type AuthTab = "login" | "register";
 enum UserRole {
   SUPER_ADMIN = "ROLE_SUPER_ADMIN",
   INVENTORY_MANAGER = "ROLE_ADMIN",
-  SUPPLIER = "ROLE_SUPPLIER",
-  CUSTOMER = "ROLE_CUSTOMER",
+  SUPPLIER = "SUPPLIER",
+  CUSTOMER = "CUSTOMER",
 }
 
 interface LoginFormData {

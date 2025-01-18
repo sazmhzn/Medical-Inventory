@@ -34,6 +34,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 interface GenericTableProps<T> {
   data: T[];
+  role?: string;
   columns: ColumnDef<T>[];
   viewMode: "Table" | "Card";
   detailsPath?: string; // Default to 'item' for backward compatibility
@@ -48,6 +49,7 @@ export function GenericTable<T>({
   columns,
   viewMode,
   context,
+  role = "admin",
   detailsPath = "item", // Default to 'item' for backward compatibility
   searchField = "name", // Default to 'name' for backward compatibility
   onDeleteSelected,
@@ -111,7 +113,7 @@ export function GenericTable<T>({
   };
 
   const handleRowClick = (id: string) => {
-    navigate(`/admin/${context}/${detailsPath}/${id}`);
+    navigate(`/${role}/${context}/${detailsPath}/${id}`);
   };
 
   return (

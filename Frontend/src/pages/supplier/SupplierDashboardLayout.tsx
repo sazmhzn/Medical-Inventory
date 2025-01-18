@@ -53,24 +53,24 @@ const SupplierDashboardLayout = () => {
         icon: LayoutDashboard,
         isActive: location.pathname === "/admin",
       },
-      {
-        title: "Inventory",
-        url: "/admin/inventory",
-        icon: Package,
-        isActive: location.pathname.startsWith("/admin/inventory"),
-      },
-      {
-        title: "Orders",
-        url: "/admin/orders",
-        icon: ClipboardList,
-        isActive: location.pathname.startsWith("/admin/orders"),
-      },
-      {
-        title: "Suppliers",
-        url: "/admin/suppliers",
-        icon: Truck,
-        isActive: location.pathname.startsWith("/admin/suppliers"),
-      },
+      // {
+      //   title: "Inventory",
+      //   url: "/admin/inventory",
+      //   icon: Package,
+      //   isActive: location.pathname.startsWith("/admin/inventory"),
+      // },
+      // {
+      //   title: "Orders",
+      //   url: "/admin/orders",
+      //   icon: ClipboardList,
+      //   isActive: location.pathname.startsWith("/admin/orders"),
+      // },
+      // {
+      //   title: "Suppliers",
+      //   url: "/admin/suppliers",
+      //   icon: Truck,
+      //   isActive: location.pathname.startsWith("/admin/suppliers"),
+      // },
     ],
     projects: [
       {
@@ -151,7 +151,7 @@ const SupplierDashboardLayout = () => {
   return (
     <div className="flex min-h-screen">
       <SidebarProvider
-        className="grid sm:grid-cols-[auto_1fr]"
+        className="grid md:grid-cols-[auto_1fr]"
         open={isSidebarOpen}
         onOpenChange={setIsSidebarOpen}
       >
